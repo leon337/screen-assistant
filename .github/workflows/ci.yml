@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Testes
+        run: npm test
+      - name: Verificação básica de segredos
+        shell: bash
+        run: |
+          if grep -RInE 'AIza[0-9A-Za-z_-]{20,}|sk-[0-9A-Za-z_-]{20,}' . \
+            --exclude-dir=.git --exclude='*.md' --exclude='.env.example'; then
+            echo 'Possível segredo encontrado.'
+            exit 1
+          fi
