@@ -1,0 +1,1 @@
+export const config={runtime:'edge'};export default()=>Response.json({status:'success',data:{status:'ok',service:'screen-assistant-preview'}},{headers:{'cache-control':'no-store','x-release-id':'phase-14-mobile-first-pwa'}})
