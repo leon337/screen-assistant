@@ -14,5 +14,6 @@
 | 12.x | Gemini real, Markdown e precisão visual |
 | 13 | Câmera e galeria no smartphone |
 | 14 | Mobile-first e PWA |
+| 15 | Redesign e sistema visual |
 
 > Os relatórios históricos registram o que foi implementado ou validado em cada etapa. Nem toda arquitetura intermediária permanece ativa na versão atual.

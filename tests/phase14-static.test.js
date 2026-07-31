@@ -19,7 +19,8 @@ test('oferece modo compacto e modo desktop', () => {
 
 test('recolhe compartilhamento de tela sem removê-lo', () => {
   assert.match(html, /<details[^>]*id="screen-panel"/);
-  assert.match(html, /Compartilhamento de tela/);
+  assert.match(html, /id="share-screen"/);
+  assert.match(html, /Compartilhar tela/);
   assert.match(app, /getDisplayMedia/);
 });
 

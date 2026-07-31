@@ -1,6 +1,6 @@
-const CACHE = 'screen-assistant-v14';
+const CACHE = 'screen-assistant-v15';
 const APP_SHELL = [
-  '/', '/index.html', '/styles.css', '/app.js', '/analysis.js', '/response.js', '/pwa.js',
+  '/', '/index.html', '/styles.css', '/app.js', '/design.js', '/analysis.js', '/response.js', '/pwa.js',
   '/markdown.js', '/http.js', '/image.js', '/manifest.webmanifest',
   '/icons/icon-192.png', '/icons/icon-512.png'
 ];

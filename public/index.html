@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b1020">
-<meta name="description" content="Analise capturas de tela, fotos e imagens com o Gemini.">
+<meta name="theme-color" content="#090d1a">
+<meta name="description" content="Analise capturas de tela, fotos e imagens com inteligência artificial.">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 <link rel="icon" href="/icons/icon-192.png">
@@ -12,11 +12,18 @@
 <title>Screen Assistant</title>
 </head>
 <body>
+<div class="ambient ambient-one" aria-hidden="true"></div>
+<div class="ambient ambient-two" aria-hidden="true"></div>
+
 <main class="shell">
 <header class="app-header">
+<div class="brand-lockup">
+<div class="brand-mark" aria-hidden="true"><span></span></div>
 <div>
-<p class="eyebrow">Gemini real · experiência mobile-first · PWA</p>
+<p class="eyebrow">Predix AI Lab</p>
 <h1>Screen Assistant</h1>
+<p class="hero-copy">Entenda o que aparece em uma tela, foto ou imagem com uma análise clara e estruturada.</p>
+</div>
 </div>
 <div class="header-actions">
 <button id="layout-toggle" class="ghost" type="button">Modo compacto</button>
@@ -24,30 +31,64 @@
 </div>
 </header>
 
-<div class="panel notice"><strong>Privacidade:</strong><span>não compartilhe senhas, dados bancários ou documentos pessoais.</span></div>
+<section class="privacy-banner" aria-label="Aviso de privacidade">
+<div class="privacy-icon" aria-hidden="true">✓</div>
+<div><strong>Privacidade em primeiro lugar</strong><span>Não compartilhe senhas, dados bancários ou documentos pessoais.</span></div>
+</section>
+
+<section class="workspace-heading" aria-labelledby="workspace-title">
+<div>
+<p class="section-kicker">Nova análise</p>
+<h2 id="workspace-title">O que você quer analisar?</h2>
+</div>
+<p>Escolha uma imagem, faça uma pergunta opcional e envie para análise.</p>
+</section>
 
 <div class="grid">
-<section class="panel" id="image-panel">
-<h2>Imagem para análise</h2>
-<div class="mobile-box">
-<h3>Câmera ou galeria</h3>
-<p>A imagem é comprimida no próprio aparelho antes do envio.</p>
-<div class="controls">
-<button id="open-camera" class="mobile-action" type="button">Tirar foto</button>
-<button id="open-gallery" class="secondary" type="button">Escolher imagem</button>
+<section class="panel input-panel" id="image-panel">
+<div class="panel-heading">
+<div class="step-number" aria-hidden="true">1</div>
+<div><p class="section-kicker">Entrada</p><h2>Escolha a imagem</h2></div>
+</div>
+
+<div class="source-picker">
+<button id="open-camera" class="source-card mobile-action" type="button">
+<span class="source-icon" aria-hidden="true">◉</span>
+<span><strong>Tirar foto</strong><small>Abra a câmera do celular</small></span>
+</button>
+<button id="open-gallery" class="source-card secondary" type="button">
+<span class="source-icon" aria-hidden="true">▣</span>
+<span><strong>Escolher imagem</strong><small>Use uma foto da galeria</small></span>
+</button>
 </div>
 <input id="camera-input" type="file" accept="image/*" capture="environment" hidden>
 <input id="gallery-input" type="file" accept="image/*" hidden>
+
+<div class="preview-shell">
+<div class="preview-empty">
+<span class="preview-symbol" aria-hidden="true">＋</span>
+<strong>Imagem para análise</strong>
+<span>Selecione uma foto, imagem ou captura de tela.</span>
 </div>
 <img id="image-preview" class="hidden" alt="Imagem selecionada para análise">
+</div>
+<div class="preview-meta">
 <p id="source-meta" class="source-meta">Nenhuma imagem selecionada.</p>
-<p id="image-meta" class="meta">Use uma captura, a câmera ou a galeria.</p>
-<label for="question">Pergunta opcional</label>
-<textarea id="question" maxlength="1000" placeholder="O que você quer analisar?"></textarea>
-<div class="controls">
-<button id="analyze" class="wide" type="button" disabled>Analisar com Gemini</button>
+<p id="image-meta" class="meta">A imagem será comprimida no próprio aparelho antes do envio.</p>
+</div>
+
+<div class="field-group">
+<div class="field-heading"><label for="question">Pergunta opcional</label><span>até 1.000 caracteres</span></div>
+<textarea id="question" maxlength="1000" placeholder="Ex.: Resuma o conteúdo principal desta imagem."></textarea>
+</div>
+
+<div class="primary-actions">
+<button id="analyze" class="primary-cta wide" type="button" disabled>
+<span aria-hidden="true">✦</span> Analisar imagem
+</button>
 <button id="cancel-analysis" class="danger hidden" type="button">Cancelar análise</button>
 </div>
+
 <ul id="analysis-progress" class="progress-steps hidden" aria-live="polite">
 <li data-stage="prepare" class="progress-step">Preparando imagem</li>
 <li data-stage="send" class="progress-step">Enviando com segurança</li>
@@ -57,48 +98,81 @@
 </ul>
 </section>
 
+<aside class="side-column">
 <details class="panel screen-details" id="screen-panel" open>
-<summary><span>Compartilhamento de tela</span><span class="desktop-only-label meta">principalmente para computadores</span></summary>
+<summary>
+<span class="summary-title"><span class="tool-icon" aria-hidden="true">▰</span><span>Compartilhar tela<small>Recurso para computador</small></span></span>
+<span class="desktop-only-label meta">opcional</span>
+</summary>
 <div class="screen-content">
 <p id="status" class="status" aria-live="polite">Pronto.</p>
-<div id="screen-placeholder" class="placeholder">No computador, compartilhe uma tela. No celular, use câmera ou galeria.</div>
+<div id="screen-placeholder" class="placeholder">
+<span class="placeholder-icon" aria-hidden="true">⌗</span>
+<strong>Captura autorizada</strong>
+<span>Compartilhe uma tela e capture somente o frame que deseja analisar.</span>
+</div>
 <video id="screen-video" class="hidden" autoplay muted playsinline></video>
-<div class="controls">
+<div class="controls screen-controls">
 <button id="share-screen" class="wide" type="button">Compartilhar tela</button>
 <button id="capture-frame" class="secondary" type="button" disabled>Capturar frame</button>
 <button id="stop-screen" class="danger" type="button" disabled>Encerrar</button>
 </div>
 </div>
 </details>
+
+<section class="panel trust-card" aria-label="Como funciona">
+<p class="section-kicker">Como funciona</p>
+<h2>Rápido e controlado</h2>
+<ul class="trust-list">
+<li><span aria-hidden="true">1</span><div><strong>Você escolhe</strong><small>Nada é capturado sem sua ação.</small></div></li>
+<li><span aria-hidden="true">2</span><div><strong>O aparelho otimiza</strong><small>A imagem é reduzida antes do envio.</small></div></li>
+<li><span aria-hidden="true">3</span><div><strong>A IA organiza</strong><small>A resposta chega pronta para ler, copiar ou ouvir.</small></div></li>
+</ul>
+</section>
+</aside>
 </div>
 
-<section class="panel" id="response-panel">
-<div class="response-head"><h2>Resposta</h2><span class="badge">Markdown seguro</span></div>
-<div id="answer" class="answer" role="region" aria-live="polite" aria-busy="false">Aguardando análise.</div>
-<p id="response-meta" class="meta"></p>
-<div class="controls">
-<button id="copy-answer" class="secondary" type="button" disabled>Copiar texto</button>
-<button id="speak-answer" type="button" disabled>Ouvir</button>
+<section class="panel response-panel" id="response-panel">
+<div class="response-head">
+<div class="panel-heading response-title">
+<div class="step-number" aria-hidden="true">2</div>
+<div><p class="section-kicker">Resultado</p><h2>Resposta da análise</h2></div>
+</div>
+<span class="badge"><span aria-hidden="true">✓</span> Conteúdo protegido</span>
+</div>
+<div id="answer" class="answer answer-empty" role="region" aria-live="polite" aria-busy="false">A resposta aparecerá aqui depois da análise.</div>
+<p id="response-meta" class="meta response-meta"></p>
+
+<div class="response-actions">
+<button id="new-analysis" class="primary-cta" type="button">Nova análise</button>
+<div class="quick-actions">
+<button id="copy-answer" class="secondary" type="button" disabled>Copiar</button>
+<button id="speak-answer" class="secondary" type="button" disabled>Ouvir</button>
+<button id="share-answer" class="secondary" type="button" disabled>Compartilhar</button>
 <button id="stop-voice" class="danger" type="button" disabled>Interromper voz</button>
 </div>
-<div class="post-actions">
+</div>
+
+<details class="more-actions">
+<summary>Mais opções</summary>
 <div class="controls">
-<button id="new-analysis" class="secondary" type="button">Nova análise</button>
 <button id="change-image" class="secondary" type="button">Trocar imagem</button>
 <button id="repeat-analysis" class="secondary" type="button" disabled>Repetir análise</button>
-<button id="share-answer" class="secondary" type="button" disabled>Compartilhar resposta</button>
 <button id="clear-all" class="danger" type="button">Limpar tudo</button>
 </div>
-</div>
+</details>
 </section>
+
 <p id="install-hint" class="install-hint"></p>
+<footer class="app-footer"><span>Screen Assistant</span><span>Gemini · PWA · processamento controlado</span></footer>
 </main>
 
 <nav id="mobile-action-bar" class="mobile-action-bar" aria-label="Ações rápidas">
-<button id="bar-camera" class="mobile-action" type="button">Foto</button>
-<button id="bar-gallery" class="secondary" type="button">Galeria</button>
-<button id="bar-analyze" type="button" disabled>Analisar</button>
+<button id="bar-camera" class="mobile-action" type="button"><span aria-hidden="true">◉</span> Foto</button>
+<button id="bar-gallery" class="secondary" type="button"><span aria-hidden="true">▣</span> Galeria</button>
+<button id="bar-analyze" type="button" disabled><span aria-hidden="true">✦</span> Analisar</button>
 </nav>
 <script type="module" src="/app.js"></script>
+<script type="module" src="/design.js"></script>
 </body>
 </html>

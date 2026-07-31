@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.19.0 — 2026-07-31
+
+### Fase 15 — Redesign e sistema visual
+
+- nova identidade visual vinculada à Predix AI;
+- hierarquia focada na jornada selecionar → perguntar → analisar;
+- câmera e galeria apresentadas como entradas principais;
+- compartilhamento de tela reposicionado como recurso secundário;
+- área de resposta transformada em cartão de leitura;
+- ações rápidas e opções avançadas reorganizadas;
+- design tokens para cores, superfícies, espaçamentos e raios;
+- estados vazios e feedbacks visuais refinados;
+- foco de teclado e redução de movimento preservados;
+- tema da PWA e cache estático atualizados para a versão 15.
+
 ## 0.18.0 — 2026-07-31
 
 ### Fase 14 — Mobile-first e PWA

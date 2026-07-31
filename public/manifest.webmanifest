@@ -1,13 +1,13 @@
 {
   "name": "Screen Assistant",
   "short_name": "Screen Assist",
-  "description": "Analise capturas de tela, fotos e imagens com o Gemini.",
+  "description": "Analise capturas de tela, fotos e imagens com inteligência artificial.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0b1020",
-  "theme_color": "#0b1020",
+  "background_color": "#090d1a",
+  "theme_color": "#090d1a",
   "categories": ["productivity", "utilities"],
   "icons": [
     {"src":"/icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},

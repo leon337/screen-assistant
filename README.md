@@ -10,6 +10,7 @@ Assistente visual 100% web que recebe uma captura autorizada da tela, uma foto d
 - Hospedagem: Vercel
 - IA atual: Gemini, com fallback entre dois modelos Gemini
 - Interface: desktop, smartphone e PWA
+- Design atual: Fase 15, com identidade Predix AI e jornada visual simplificada
 
 ## Problema original
 
@@ -42,6 +43,7 @@ A pesquisa inicial considerou Vercel, Cloudflare Workers, Supabase, Gemini e GLM
 - barra de ações móvel;
 - estados detalhados de progresso e cancelamento;
 - instalação como PWA;
+- sistema visual próprio com foco na jornada selecionar → perguntar → analisar;
 - nenhuma persistência de imagens no aplicativo.
 
 ## Arquitetura atual
@@ -74,6 +76,7 @@ api/                    Funções Edge da Vercel
   v1/analyze-screen.js  Análise multimodal e fallback
 public/                 Aplicação web e PWA
   app.js                Coordenação da interface
+  design.js             Sincronização de estados visuais
   analysis.js           Requisição e estados da análise
   image.js              Compressão e orientação
   markdown.js           Markdown seguro
@@ -119,18 +122,19 @@ Nunca versionar `.env.local` ou chaves reais.
 npm test
 ```
 
-A Fase 14 foi validada com 32 testes automatizados, além de testes manuais no desktop e Android para:
+A suíte cobre:
 
 - captura de tela;
 - câmera;
 - galeria;
 - compressão;
-- Gemini real;
-- fallback;
-- Markdown;
+- Gemini e fallback;
+- Markdown seguro;
 - voz;
 - layout mobile;
-- PWA.
+- PWA;
+- estados de análise;
+- hierarquia e preservação funcional do redesign da Fase 15.
 
 ## Deploy na Vercel
 
@@ -145,6 +149,13 @@ Variáveis obrigatórias:
 | `GEMINI_MODEL` | Modelo principal |
 | `GEMINI_FALLBACK_MODEL` | Modelo alternativo |
 | `GEMINI_TIMEOUT_MS` | Referência operacional de timeout |
+
+Fluxo desejado para a integração Git:
+
+```text
+GitHub main → produção na Vercel
+Pull Request/branch → Preview Deployment
+```
 
 ## Segurança e privacidade
 
@@ -170,12 +181,14 @@ A documentação registra a evolução desde a ideia original, incluindo decisõ
 - [Decisões arquiteturais](docs/DECISIONS.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Relatórios por fase](docs/phases/)
+- [Fase 15 — Redesign](docs/phases/PHASE-15-REDESIGN.md)
 
 ## Estado atual
 
 ```yaml
-release: phase-14-mobile-first-pwa
-status: operacional
+release: phase-15-redesign
+version: 0.19.0
+status: em_validacao
 frontend: desktop_mobile_pwa
 backend: vercel_edge
 ia: gemini_multimodal
