@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<meta name="description" content="Analise capturas de tela, fotos e imagens com o Gemini.">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="stylesheet" href="/styles.css">
+<title>Screen Assistant</title>
+</head>
+<body>
+<main class="shell">
+<header class="app-header">
+<div>
+<p class="eyebrow">Gemini real · experiência mobile-first · PWA</p>
+<h1>Screen Assistant</h1>
+</div>
+<div class="header-actions">
+<button id="layout-toggle" class="ghost" type="button">Modo compacto</button>
+<button id="install-app" class="secondary hidden" type="button">Instalar app</button>
+</div>
+</header>
+
+<div class="panel notice"><strong>Privacidade:</strong><span>não compartilhe senhas, dados bancários ou documentos pessoais.</span></div>
+
+<div class="grid">
+<section class="panel" id="image-panel">
+<h2>Imagem para análise</h2>
+<div class="mobile-box">
+<h3>Câmera ou galeria</h3>
+<p>A imagem é comprimida no próprio aparelho antes do envio.</p>
+<div class="controls">
+<button id="open-camera" class="mobile-action" type="button">Tirar foto</button>
+<button id="open-gallery" class="secondary" type="button">Escolher imagem</button>
+</div>
+<input id="camera-input" type="file" accept="image/*" capture="environment" hidden>
+<input id="gallery-input" type="file" accept="image/*" hidden>
+</div>
+<img id="image-preview" class="hidden" alt="Imagem selecionada para análise">
+<p id="source-meta" class="source-meta">Nenhuma imagem selecionada.</p>
+<p id="image-meta" class="meta">Use uma captura, a câmera ou a galeria.</p>
+<label for="question">Pergunta opcional</label>
+<textarea id="question" maxlength="1000" placeholder="O que você quer analisar?"></textarea>
+<div class="controls">
+<button id="analyze" class="wide" type="button" disabled>Analisar com Gemini</button>
+<button id="cancel-analysis" class="danger hidden" type="button">Cancelar análise</button>
+</div>
+<ul id="analysis-progress" class="progress-steps hidden" aria-live="polite">
+<li data-stage="prepare" class="progress-step">Preparando imagem</li>
+<li data-stage="send" class="progress-step">Enviando com segurança</li>
+<li data-stage="analyze" class="progress-step">Analisando com Gemini</li>
+<li data-stage="fallback" class="progress-step">Tentando modelo alternativo</li>
+<li data-stage="format" class="progress-step">Organizando resposta</li>
+</ul>
+</section>
+
+<details class="panel screen-details" id="screen-panel" open>
+<summary><span>Compartilhamento de tela</span><span class="desktop-only-label meta">principalmente para computadores</span></summary>
+<div class="screen-content">
+<p id="status" class="status" aria-live="polite">Pronto.</p>
+<div id="screen-placeholder" class="placeholder">No computador, compartilhe uma tela. No celular, use câmera ou galeria.</div>
+<video id="screen-video" class="hidden" autoplay muted playsinline></video>
+<div class="controls">
+<button id="share-screen" class="wide" type="button">Compartilhar tela</button>
+<button id="capture-frame" class="secondary" type="button" disabled>Capturar frame</button>
+<button id="stop-screen" class="danger" type="button" disabled>Encerrar</button>
+</div>
+</div>
+</details>
+</div>
+
+<section class="panel" id="response-panel">
+<div class="response-head"><h2>Resposta</h2><span class="badge">Markdown seguro</span></div>
+<div id="answer" class="answer" role="region" aria-live="polite" aria-busy="false">Aguardando análise.</div>
+<p id="response-meta" class="meta"></p>
+<div class="controls">
+<button id="copy-answer" class="secondary" type="button" disabled>Copiar texto</button>
+<button id="speak-answer" type="button" disabled>Ouvir</button>
+<button id="stop-voice" class="danger" type="button" disabled>Interromper voz</button>
+</div>
+<div class="post-actions">
+<div class="controls">
+<button id="new-analysis" class="secondary" type="button">Nova análise</button>
+<button id="change-image" class="secondary" type="button">Trocar imagem</button>
+<button id="repeat-analysis" class="secondary" type="button" disabled>Repetir análise</button>
+<button id="share-answer" class="secondary" type="button" disabled>Compartilhar resposta</button>
+<button id="clear-all" class="danger" type="button">Limpar tudo</button>
+</div>
+</div>
+</section>
+<p id="install-hint" class="install-hint"></p>
+</main>
+
+<nav id="mobile-action-bar" class="mobile-action-bar" aria-label="Ações rápidas">
+<button id="bar-camera" class="mobile-action" type="button">Foto</button>
+<button id="bar-gallery" class="secondary" type="button">Galeria</button>
+<button id="bar-analyze" type="button" disabled>Analisar</button>
+</nav>
+<script type="module" src="/app.js"></script>
+</body>
+</html>
