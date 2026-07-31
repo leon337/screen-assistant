@@ -67,24 +67,58 @@ Não foram alterados:
 - política de cache da API;
 - persistência de dados.
 
-## Critérios de aceite
+## Validação
 
-- todos os IDs funcionais anteriores permanecem no HTML;
-- testes das fases anteriores continuam aprovados;
-- testes específicos da Fase 15 aprovados;
-- API e backend sem mudanças;
-- layout utilizável em desktop e smartphone;
-- nenhuma chave ou segredo no diff;
-- PWA atualiza o shell estático para a versão 15;
-- promoção somente após CI aprovado.
-
-## Integração GitHub–Vercel
-
-O objetivo operacional é usar `leon337/screen-assistant` como origem do projeto Vercel, com:
-
-```text
-main → produção
-pull request/branch → preview
+```yaml
+pull_request: 2
+ci: 38/38_PASS
+merge_commit: 9c512b866d7735d63c8b2c5d41e882387bcf0e69
+segredos_detectados: NÃO
+backend_alterado_no_PR: NÃO
 ```
 
-A conexão deve preservar as variáveis protegidas já existentes no projeto `screen-assistant-preview-20260731`. A integração só é considerada concluída quando um commit do GitHub aparece como origem de um deployment da Vercel.
+## Publicação na Vercel
+
+O redesign foi publicado no projeto existente:
+
+```yaml
+project: screen-assistant-preview-20260731
+deployment: dpl_4FPQnPt7pivBr5cWhBnrwynQKUxf
+target: production
+status: READY
+release: phase-15-redesign
+frontend_source: github-main
+```
+
+Como o conector disponível não expôs a operação de autorizar o repositório no projeto Vercel, foi implantada uma ponte controlada de origem:
+
+```text
+Vercel
+→ função Edge de arquivos estáticos
+→ arquivos públicos da branch main no GitHub
+```
+
+A API Gemini continua dentro do projeto Vercel e utiliza as variáveis protegidas existentes. A chave não é enviada ao GitHub nem ao navegador.
+
+### Limitação da ponte
+
+A ponte mantém a interface alinhada à `main`, mas não substitui a integração Git nativa da Vercel. Ela adiciona dependência de leitura do GitHub para servir os arquivos da interface.
+
+## Integração GitHub–Vercel nativa
+
+O estado desejado permanece:
+
+```text
+main → deployment de produção
+pull request/branch → preview deployment
+```
+
+A integração nativa será considerada concluída somente quando a Vercel registrar o repositório e o SHA do commit como origem do deployment. Ainda é necessária a autorização do repositório `leon337/screen-assistant` nas configurações Git do projeto Vercel.
+
+A autorização deve preservar:
+
+- projeto existente `screen-assistant-preview-20260731`;
+- branch de produção `main`;
+- diretório raiz do repositório;
+- variáveis de ambiente já cadastradas;
+- domínio atual de produção.
