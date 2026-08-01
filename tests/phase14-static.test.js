@@ -9,6 +9,7 @@ const styles = await readFile(new URL('public/styles.css', root), 'utf8');
 const sw = await readFile(new URL('public/service-worker.js', root), 'utf8');
 const manifest = JSON.parse(await readFile(new URL('public/manifest.webmanifest', root), 'utf8'));
 const api = await readFile(new URL('api/v1/analyze-screen.js', root), 'utf8');
+const config = await readFile(new URL('src/server/config.js', root), 'utf8');
 
 test('oferece modo compacto e modo desktop', () => {
   assert.match(html, /id="layout-toggle"/);
@@ -54,9 +55,9 @@ test('publica PWA sem armazenar a API em cache', () => {
   assert.doesNotMatch(sw, /APP_SHELL[^;]*api\/v1/s);
 });
 
-test('backend solicita resposta em seções e publica release da Fase 14', () => {
+test('backend solicita resposta em seções e publica release da Fase 16', () => {
   assert.match(api, /## Resumo/);
   assert.match(api, /## Observação direta/);
   assert.match(api, /## Interpretação/);
-  assert.match(api, /phase-14-mobile-first-pwa/);
+  assert.match(config, /phase-16-security-public-readiness/);
 });
