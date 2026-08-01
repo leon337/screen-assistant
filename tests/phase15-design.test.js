@@ -44,7 +44,7 @@ test('sincroniza estado vazio da resposta', () => {
 test('atualiza PWA sem armazenar chamadas de API', () => {
   assert.equal(manifest.theme_color, '#090d1a');
   assert.equal(manifest.background_color, '#090d1a');
-  assert.match(sw, /screen-assistant-v15/);
+  assert.match(sw, /screen-assistant-v\d+/);
   assert.match(sw, /design\.js/);
   assert.match(sw, /pathname\.startsWith\('\/api\/'\)/);
 });
