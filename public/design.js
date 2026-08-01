@@ -1,3 +1,5 @@
+import './status.js';
+
 const answer = document.getElementById('answer');
 
 const emptyMessages = new Set([
