@@ -2,11 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const api = await readFile(new URL('../api/v1/analyze-screen.js', import.meta.url), 'utf8');
+const root = new URL('../', import.meta.url);
+const api = await readFile(new URL('api/v1/analyze-screen.js', root), 'utf8');
+const validation = await readFile(new URL('src/server/validation.js', root), 'utf8');
 
 test('backend continua aceitando apenas WebP e JPEG', () => {
-  assert.match(api, /image\/webp/);
-  assert.match(api, /image\/jpeg/);
+  assert.match(validation, /image\/webp/);
+  assert.match(validation, /image\/jpeg/);
 });
 
 test('prompt mantém leitura cautelosa', () => {
