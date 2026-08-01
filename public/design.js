@@ -1,4 +1,5 @@
 import './status.js';
+import './mobile-v18.js';
 
 const answer = document.getElementById('answer');
 
