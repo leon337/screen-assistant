@@ -55,9 +55,9 @@ test('publica PWA sem armazenar a API em cache', () => {
   assert.doesNotMatch(sw, /APP_SHELL[^;]*api\/v1/s);
 });
 
-test('backend solicita resposta em seções e publica release da Fase 16', () => {
+test('backend solicita resposta em seções e publica release da Fase 17', () => {
   assert.match(api, /## Resumo/);
   assert.match(api, /## Observação direta/);
   assert.match(api, /## Interpretação/);
-  assert.match(config, /phase-16-security-public-readiness/);
+  assert.match(config, /phase-17-visible-operational-status/);
 });
