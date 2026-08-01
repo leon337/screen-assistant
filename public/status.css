@@ -1,0 +1,108 @@
+.operations-card {
+  margin-top: 18px;
+  padding: 20px;
+  border: 1px solid rgba(124, 140, 255, .24);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(19, 28, 54, .92), rgba(11, 18, 36, .92));
+  box-shadow: 0 12px 38px rgba(0, 0, 0, .2);
+}
+
+.operations-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.operations-heading h2 {
+  margin: .28rem 0 0;
+  font-size: 1.25rem;
+}
+
+.operations-summary {
+  margin: 16px 0 14px;
+  padding: 11px 13px;
+  border: 1px solid rgba(113, 129, 184, .2);
+  border-radius: 12px;
+  background: rgba(67, 91, 158, .12);
+  color: #d6def8;
+  font-weight: 750;
+}
+
+.operations-summary[data-tone="success"] {
+  border-color: rgba(114, 229, 173, .22);
+  background: rgba(53, 194, 126, .13);
+  color: #c9f7df;
+}
+
+.operations-summary[data-tone="warning"] {
+  border-color: rgba(255, 199, 107, .24);
+  background: rgba(255, 199, 107, .1);
+  color: #ffe2aa;
+}
+
+.operations-summary[data-tone="error"] {
+  border-color: rgba(255, 119, 153, .24);
+  background: rgba(255, 80, 124, .12);
+  color: #ffd0dc;
+}
+
+.operations-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.operations-grid > div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(143, 160, 210, .16);
+  border-radius: 12px;
+  background: rgba(7, 12, 27, .46);
+}
+
+.operations-grid dt {
+  margin-bottom: 5px;
+  color: #8792b6;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.operations-grid dd {
+  margin: 0;
+  color: #eef2ff;
+  font-size: .9rem;
+  font-weight: 760;
+  overflow-wrap: anywhere;
+}
+
+.operations-note {
+  margin: 12px 2px 0;
+  color: #8f9abc;
+  font-size: .82rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 800px) {
+  .operations-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .operations-heading button {
+    width: 100%;
+  }
+
+  .operations-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .operations-grid {
+    grid-template-columns: 1fr;
+  }
+}
