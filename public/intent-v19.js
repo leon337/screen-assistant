@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'screen-assistant-v19-context';
+const hasBrowserDom = typeof document !== 'undefined' && typeof localStorage !== 'undefined';
 
 const INTENTS = Object.freeze([
   { id: 'explain', label: 'Explicar a imagem', hint: 'Entender o conteúdo principal', profileId: 'general', taskId: 'explain' },
@@ -33,6 +34,7 @@ let context = {
 };
 
 function readStoredContext() {
+  if (!hasBrowserDom) return;
   try {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     const intent = INTENTS.find((item) => item.id === stored.intentId) || INTENTS[0];
@@ -50,11 +52,11 @@ function readStoredContext() {
 }
 
 function persist() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(context));
+  if (hasBrowserDom) localStorage.setItem(STORAGE_KEY, JSON.stringify(context));
 }
 
 function installStylesheet() {
-  if (document.querySelector('link[data-intent-v19]')) return;
+  if (!hasBrowserDom || document.querySelector('link[data-intent-v19]')) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.href = '/intent-v19.css';
@@ -64,14 +66,17 @@ function installStylesheet() {
 
 function traderIntroduction() {
   return `
-    <section id="trader-introduction" class="trader-introduction" aria-live="polite">
-      <strong>Leonardo Trader</strong>
-      <p>Mentor educacional de análise gráfica e gestão de risco. Ele organiza cenários, confirmações e invalidações, sem mandar comprar ou vender.</p>
-    </section>
+    <details id="trader-introduction" class="trader-introduction" open>
+      <summary>Conheça o Leonardo Trader</summary>
+      <p><strong>Sou Leonardo Trader, seu mentor educacional de análise gráfica e gestão de risco.</strong></p>
+      <p>Meu trabalho não é prever o mercado com certeza nem mandar você comprar ou vender. Vou ajudá-lo a interpretar estruturas, identificar possíveis cenários, reconhecer confirmações e compreender os riscos de cada hipótese.</p>
+      <p>Para começar, envie o gráfico e, quando possível, informe ativo, tempo gráfico, mercado e estilo de operação que deseja estudar.</p>
+    </details>
   `;
 }
 
 function buildPicker() {
+  if (!hasBrowserDom) return;
   const questionGroup = document.getElementById('question')?.closest('.field-group');
   if (!questionGroup || document.getElementById('intent-v19')) return;
 
@@ -126,15 +131,17 @@ function buildPicker() {
   renderContext(section);
 }
 
+function selectIntent(intent) {
+  context.intentId = intent.id;
+  context.profileId = intent.profileId;
+  context.taskId = intent.id === 'trader' && TRADER_TASKS.some((task) => task.id === context.taskId)
+    ? context.taskId : intent.taskId;
+}
+
 function bindPicker(section) {
   section.querySelectorAll('[data-intent-id]').forEach((button) => {
     button.addEventListener('click', () => {
-      const intent = INTENTS.find((item) => item.id === button.dataset.intentId) || INTENTS[0];
-      context.intentId = intent.id;
-      context.profileId = intent.profileId;
-      context.taskId = intent.id === 'trader'
-        ? (section.querySelector('#trader-task')?.value || intent.taskId)
-        : intent.taskId;
+      selectIntent(INTENTS.find((item) => item.id === button.dataset.intentId) || INTENTS[0]);
       persist();
       renderContext(section);
       updateQuestionPlaceholder();
@@ -142,17 +149,23 @@ function bindPicker(section) {
   });
 
   section.querySelector('#trader-task')?.addEventListener('change', (event) => {
-    context.taskId = event.target.value;
-    context.profileId = 'trader-analyst';
     context.intentId = 'trader';
+    context.profileId = 'trader-analyst';
+    context.taskId = event.target.value;
     persist();
     renderContext(section);
   });
 
   section.querySelector('#expert-profile')?.addEventListener('change', (event) => {
-    context.profileId = event.target.value;
+    const selectedProfile = event.target.value;
+    if (selectedProfile === 'trader-analyst') {
+      selectIntent(INTENTS.find((item) => item.id === 'trader'));
+    } else {
+      selectIntent(INTENTS.find((item) => item.profileId === selectedProfile) || INTENTS[0]);
+    }
     persist();
     renderContext(section);
+    updateQuestionPlaceholder();
   });
 
   section.querySelector('#response-mode')?.addEventListener('change', (event) => {
@@ -161,7 +174,7 @@ function bindPicker(section) {
   });
 }
 
-function renderContext(section = document.getElementById('intent-v19')) {
+function renderContext(section = hasBrowserDom ? document.getElementById('intent-v19') : null) {
   if (!section) return;
   section.querySelectorAll('[data-intent-id]').forEach((button) => {
     const active = button.dataset.intentId === context.intentId;
@@ -169,7 +182,7 @@ function renderContext(section = document.getElementById('intent-v19')) {
     button.setAttribute('aria-checked', String(active));
   });
 
-  const trader = context.intentId === 'trader' || context.profileId === 'trader-analyst';
+  const trader = context.intentId === 'trader';
   section.querySelector('#trader-options')?.classList.toggle('hidden', !trader);
   const traderTask = section.querySelector('#trader-task');
   if (traderTask && TRADER_TASKS.some((task) => task.id === context.taskId)) traderTask.value = context.taskId;
@@ -184,6 +197,7 @@ function renderContext(section = document.getElementById('intent-v19')) {
 }
 
 function updateQuestionPlaceholder() {
+  if (!hasBrowserDom) return;
   const question = document.getElementById('question');
   if (!question) return;
   const placeholders = {
@@ -196,16 +210,25 @@ function updateQuestionPlaceholder() {
   question.placeholder = placeholders[context.intentId] || placeholders.explain;
 }
 
+function adaptNavigation() {
+  if (!hasBrowserDom) return;
+  const statusTabLabel = document.querySelector('[data-premium-route="status"] span:last-child');
+  if (statusTabLabel) statusTabLabel.textContent = 'Mais';
+}
+
 function synchronizeJourney() {
+  if (!hasBrowserDom) return;
   const preview = document.getElementById('image-preview');
   const answer = document.getElementById('answer');
   const hasImage = Boolean(preview?.getAttribute('src')) && !preview.classList.contains('hidden');
   const answerText = answer?.textContent?.trim() || '';
-  const hasAnswer = Boolean(answerText) && ![
+  const busy = answer?.getAttribute('aria-busy') === 'true';
+  const emptyMessages = [
     'Aguardando análise.',
     'A resposta aparecerá aqui depois da análise.',
     'Iniciando análise…',
-  ].includes(answerText);
+  ];
+  const hasAnswer = busy || (Boolean(answerText) && !emptyMessages.includes(answerText));
   document.body.classList.toggle('v19-has-image', hasImage);
   document.body.classList.toggle('v19-has-answer', hasAnswer);
 }
@@ -214,15 +237,17 @@ export function getAnalysisContext() {
   return { ...context };
 }
 
-readStoredContext();
-installStylesheet();
-buildPicker();
-updateQuestionPlaceholder();
-
-new MutationObserver(synchronizeJourney).observe(document.body, {
-  subtree: true,
-  childList: true,
-  attributes: true,
-  attributeFilter: ['src', 'class', 'aria-busy'],
-});
-synchronizeJourney();
+if (hasBrowserDom) {
+  readStoredContext();
+  installStylesheet();
+  buildPicker();
+  updateQuestionPlaceholder();
+  adaptNavigation();
+  new MutationObserver(synchronizeJourney).observe(document.body, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ['src', 'class', 'aria-busy'],
+  });
+  synchronizeJourney();
+}
