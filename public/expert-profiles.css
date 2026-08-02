@@ -1,0 +1,48 @@
+.expert-profile-picker {
+  display: grid;
+  gap: .65rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--line, #334155) 78%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--panel, #111827) 92%, transparent);
+}
+
+.expert-profile-select {
+  width: 100%;
+  min-height: 48px;
+  padding: .75rem .9rem;
+  border: 1px solid var(--line, #334155);
+  border-radius: 12px;
+  background: var(--surface, #0f172a);
+  color: var(--text, #f8fafc);
+  font: inherit;
+}
+
+.expert-profile-select:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent, #60a5fa) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.expert-profile-description {
+  margin: 0;
+  color: var(--muted, #94a3b8);
+  font-size: .9rem;
+  line-height: 1.45;
+}
+
+#reanalyze-profile {
+  white-space: normal;
+}
+
+@media (max-width: 800px) {
+  .expert-profile-picker {
+    margin-block: .75rem;
+    padding: .85rem;
+  }
+
+  .expert-profile-select {
+    min-height: 52px;
+    font-size: 16px;
+  }
+}
