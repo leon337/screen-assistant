@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const root = new URL('../', import.meta.url);
-const api = await readFile(new URL('api/v1/analyze-screen.js', root), 'utf8');
+const profiles = await readFile(new URL('src/server/expert-profiles.js', root), 'utf8');
 const validation = await readFile(new URL('src/server/validation.js', root), 'utf8');
 
 test('backend continua aceitando apenas WebP e JPEG', () => {
@@ -12,6 +12,6 @@ test('backend continua aceitando apenas WebP e JPEG', () => {
 });
 
 test('prompt mantém leitura cautelosa', () => {
-  assert.match(api, /não foi possível confirmar/i);
-  assert.match(api, /Não invente/i);
+  assert.match(profiles, /não foi possível confirmar/i);
+  assert.match(profiles, /Não invente/i);
 });
