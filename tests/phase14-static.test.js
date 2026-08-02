@@ -9,6 +9,7 @@ const styles = await readFile(new URL('public/styles.css', root), 'utf8');
 const sw = await readFile(new URL('public/service-worker.js', root), 'utf8');
 const manifest = JSON.parse(await readFile(new URL('public/manifest.webmanifest', root), 'utf8'));
 const api = await readFile(new URL('api/v1/analyze-screen.js', root), 'utf8');
+const profiles = await readFile(new URL('src/server/expert-profiles.js', root), 'utf8');
 const config = await readFile(new URL('src/server/config.js', root), 'utf8');
 
 test('oferece modo compacto e modo desktop', () => {
@@ -55,9 +56,9 @@ test('publica PWA sem armazenar a API em cache', () => {
   assert.doesNotMatch(sw, /APP_SHELL[^;]*api\/v1/s);
 });
 
-test('backend mantém resposta em seções na release premium da Fase 18 R2', () => {
-  assert.match(api, /## Resumo/);
-  assert.match(api, /## Observação direta/);
-  assert.match(api, /## Interpretação/);
-  assert.match(config, /phase-18-mobile-premium-r2/);
+test('backend usa contratos especializados na release da Fase 19', () => {
+  assert.match(api, /buildExpertPrompt/);
+  assert.match(profiles, /TRUTH_POLICY/);
+  assert.match(profiles, /trader-complete-analysis/);
+  assert.match(config, /phase-19-intent-trader-v2/);
 });
