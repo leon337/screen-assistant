@@ -7,15 +7,6 @@ function getStoredAccessToken() {
   return sessionStorage.getItem('screen-assistant-access-token')?.trim() || '';
 }
 
-function confirmPrivacyOnce() {
-  if (sessionStorage.getItem('screen-assistant-privacy-confirmed') === 'yes') return;
-  const accepted = window.confirm(
-    'A imagem será enviada ao Gemini para análise. Não envie senhas, dados bancários ou documentos pessoais. Continuar?',
-  );
-  if (!accepted) throw new Error('Envio cancelado antes da análise.');
-  sessionStorage.setItem('screen-assistant-privacy-confirmed', 'yes');
-}
-
 export function clearPilotAccess() {
   sessionStorage.removeItem('screen-assistant-access-token');
 }
@@ -24,7 +15,6 @@ export async function requestAnalysis({ imageBlob, question = '', profileId = ge
   if (!(imageBlob instanceof Blob) || !imageBlob.size) throw new Error('Selecione uma imagem antes de analisar.');
   if (question.length > 1000) throw new Error('A pergunta excede 1.000 caracteres.');
 
-  confirmPrivacyOnce();
   const accessToken = getStoredAccessToken();
   const selectedProfile = getProfile(profileId);
 
