@@ -1,4 +1,5 @@
 import { readApiResponse } from './http.js';
+import { getAnalysisContext } from './intent-v19.js';
 
 export const ANALYSIS_STAGES = ['prepare', 'send', 'analyze', 'fallback', 'format'];
 
@@ -31,11 +32,15 @@ export async function requestAnalysis({ imageBlob, question = '', signal, onStag
 
   confirmPrivacyOnce();
   const accessToken = getAccessToken();
+  const analysisContext = getAnalysisContext();
 
   onStage('prepare');
   const form = new FormData();
   form.append('image', imageBlob, imageBlob.type === 'image/jpeg' ? 'image.jpg' : 'image.webp');
   form.append('question', question);
+  form.append('profileId', analysisContext.profileId);
+  form.append('taskId', analysisContext.taskId);
+  form.append('responseMode', analysisContext.responseMode);
 
   onStage('send');
   const timers = [
