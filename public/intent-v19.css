@@ -75,18 +75,27 @@
 }
 
 .trader-introduction {
-  margin-bottom: 12px;
+  margin: 0 0 12px;
+  border-bottom: 1px solid rgba(122, 221, 173, .14);
+  padding-bottom: 11px;
+}
+
+.trader-introduction summary {
+  color: #d4ffe8;
+  cursor: pointer;
+  font-size: .92rem;
+  font-weight: 800;
 }
 
 .trader-introduction strong {
   color: #d4ffe8;
-  font-size: 1rem;
+  font-size: .96rem;
 }
 
 .trader-introduction p {
-  margin: 5px 0 0;
+  margin: 7px 0 0;
   color: #b8c8c1;
-  font-size: .88rem;
+  font-size: .86rem;
   line-height: 1.5;
 }
 
@@ -167,6 +176,10 @@
 
   body.v19-has-image #bar-camera,
   body.v19-has-image #bar-gallery {
+    display: none;
+  }
+
+  body:not(.v19-has-answer) [data-premium-route="result"] {
     display: none;
   }
 
