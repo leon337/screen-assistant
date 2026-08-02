@@ -33,7 +33,9 @@ test('carrega o painel sem alterar a jornada principal', () => {
   assert.match(serviceWorker, /status\.css/);
 });
 
-test('publica release da Fase 17', () => {
+test('preserva a release da Fase 17 e invalida caches antigos', () => {
   assert.match(config, /phase-17-visible-operational-status/);
-  assert.match(serviceWorker, /screen-assistant-v17/);
+  assert.match(serviceWorker, /screen-assistant-v19-open-pilot/);
+  assert.match(serviceWorker, /caches\.delete/);
+  assert.match(serviceWorker, /isRuntimeAsset/);
 });

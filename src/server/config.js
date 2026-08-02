@@ -4,10 +4,16 @@ const integer = (value, fallback, { min = 0, max = Number.MAX_SAFE_INTEGER } = {
   return Math.min(max, Math.max(min, parsed));
 };
 
+const boolean = (value, fallback = false) => {
+  if (value === undefined || value === null || value === '') return fallback;
+  return ['1', 'true', 'yes', 'on'].includes(String(value).trim().toLowerCase());
+};
+
 export function loadConfig(env = process.env) {
   return Object.freeze({
     appEnv: String(env.APP_ENV || 'preview').trim(),
     release: String(env.APP_RELEASE || 'phase-17-visible-operational-status').trim(),
+    accessControlEnabled: boolean(env.ACCESS_CONTROL_ENABLED, false),
     accessToken: String(env.PREVIEW_ACCESS_TOKEN || '').trim(),
     aiMode: String(env.AI_MODE || 'simulated').trim(),
     geminiApiKey: String(env.GEMINI_API_KEY || '').trim(),
@@ -23,7 +29,7 @@ export function loadConfig(env = process.env) {
 
 export function validateConfig(config) {
   const missing = [];
-  if (config.accessToken.length < 16) missing.push('PREVIEW_ACCESS_TOKEN');
+  if (config.accessControlEnabled && config.accessToken.length < 16) missing.push('PREVIEW_ACCESS_TOKEN');
   if (config.aiMode !== 'gemini') missing.push('AI_MODE=gemini');
   if (config.geminiApiKey.length < 10) missing.push('GEMINI_API_KEY');
   return missing;

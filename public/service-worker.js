@@ -1,8 +1,9 @@
-const CACHE = 'screen-assistant-v17';
+const CACHE = 'screen-assistant-v19-open-pilot';
 const APP_SHELL = [
-  '/', '/index.html', '/styles.css', '/status.css', '/app.js', '/design.js', '/status.js', '/analysis.js', '/response.js', '/pwa.js',
-  '/markdown.js', '/http.js', '/image.js', '/manifest.webmanifest',
-  '/icons/icon-192.png', '/icons/icon-512.png'
+  '/', '/index.html', '/styles.css', '/status.css', '/expert-profiles.css',
+  '/app.js', '/design.js', '/status.js', '/analysis.js', '/expert-profiles.js',
+  '/response.js', '/pwa.js', '/markdown.js', '/http.js', '/image.js',
+  '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -10,7 +11,11 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))).then(() => self.clients.claim()));
+  event.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
+      .then(() => self.clients.claim()),
+  );
 });
 
 self.addEventListener('fetch', (event) => {
@@ -25,6 +30,15 @@ self.addEventListener('fetch', (event) => {
       caches.open(CACHE).then((cache) => cache.put('/index.html', copy));
       return response;
     }).catch(() => caches.match('/index.html')));
+    return;
+  }
+
+  const isRuntimeAsset = /\.(?:js|css)$/.test(url.pathname);
+  if (isRuntimeAsset) {
+    event.respondWith(fetch(request).then((response) => {
+      if (response.ok) caches.open(CACHE).then((cache) => cache.put(request, response.clone()));
+      return response;
+    }).catch(() => caches.match(request)));
     return;
   }
 

@@ -1,41 +1,28 @@
 import { readApiResponse } from './http.js';
+import { getSelectedProfileId, getProfile } from './expert-profiles.js';
 
 export const ANALYSIS_STAGES = ['prepare', 'send', 'analyze', 'fallback', 'format'];
 
-function getAccessToken() {
-  const stored = sessionStorage.getItem('screen-assistant-access-token')?.trim();
-  if (stored) return stored;
-
-  const supplied = window.prompt('Digite o código de acesso do piloto fechado:')?.trim() || '';
-  if (!supplied) throw new Error('Código de acesso obrigatório para este piloto.');
-  sessionStorage.setItem('screen-assistant-access-token', supplied);
-  return supplied;
-}
-
-function confirmPrivacyOnce() {
-  if (sessionStorage.getItem('screen-assistant-privacy-confirmed') === 'yes') return;
-  const accepted = window.confirm(
-    'A imagem será enviada ao Gemini para análise. Não envie senhas, dados bancários ou documentos pessoais. Continuar?',
-  );
-  if (!accepted) throw new Error('Envio cancelado antes da análise.');
-  sessionStorage.setItem('screen-assistant-privacy-confirmed', 'yes');
+function getStoredAccessToken() {
+  return sessionStorage.getItem('screen-assistant-access-token')?.trim() || '';
 }
 
 export function clearPilotAccess() {
   sessionStorage.removeItem('screen-assistant-access-token');
 }
 
-export async function requestAnalysis({ imageBlob, question = '', signal, onStage = () => {} }) {
+export async function requestAnalysis({ imageBlob, question = '', profileId = getSelectedProfileId(), signal, onStage = () => {} }) {
   if (!(imageBlob instanceof Blob) || !imageBlob.size) throw new Error('Selecione uma imagem antes de analisar.');
   if (question.length > 1000) throw new Error('A pergunta excede 1.000 caracteres.');
 
-  confirmPrivacyOnce();
-  const accessToken = getAccessToken();
+  const accessToken = getStoredAccessToken();
+  const selectedProfile = getProfile(profileId);
 
   onStage('prepare');
   const form = new FormData();
   form.append('image', imageBlob, imageBlob.type === 'image/jpeg' ? 'image.jpg' : 'image.webp');
   form.append('question', question);
+  form.append('profileId', selectedProfile.id);
 
   onStage('send');
   const timers = [
@@ -43,13 +30,13 @@ export async function requestAnalysis({ imageBlob, question = '', signal, onStag
     setTimeout(() => onStage('fallback'), 9200),
   ];
 
+  const headers = { 'x-request-id': crypto.randomUUID() };
+  if (accessToken) headers.authorization = `Bearer ${accessToken}`;
+
   try {
     const response = await fetch('/api/v1/analyze-screen', {
       method: 'POST',
-      headers: {
-        authorization: `Bearer ${accessToken}`,
-        'x-request-id': crypto.randomUUID(),
-      },
+      headers,
       body: form,
       signal,
     });
@@ -58,6 +45,15 @@ export async function requestAnalysis({ imageBlob, question = '', signal, onStag
       if (response.status === 401) clearPilotAccess();
       throw new Error(payload.error?.message || 'Falha na análise.');
     }
+
+    const expert = payload.data?.expertProfile || {
+      id: selectedProfile.id,
+      name: selectedProfile.name,
+      fallbackUsed: false,
+    };
+    payload.data.expertProfile = expert;
+    payload.data.model = `${expert.name} · ${payload.data.model}`;
+
     onStage('format');
     return payload;
   } finally {
