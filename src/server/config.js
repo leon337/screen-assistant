@@ -7,8 +7,9 @@ const integer = (value, fallback, { min = 0, max = Number.MAX_SAFE_INTEGER } = {
 export function loadConfig(env = process.env) {
   return Object.freeze({
     appEnv: String(env.APP_ENV || 'preview').trim(),
-    release: String(env.APP_RELEASE || 'phase-19-intent-trader-v2').trim(),
-    accessToken: String(env.PREVIEW_ACCESS_TOKEN || '').trim(),
+    release: String(env.APP_RELEASE || 'phase-20-saas-auth').trim(),
+    supabaseUrl: String(env.SUPABASE_URL || '').trim().replace(/\/$/, ''),
+    supabasePublishableKey: String(env.SUPABASE_PUBLISHABLE_KEY || env.SUPABASE_ANON_KEY || '').trim(),
     aiMode: String(env.AI_MODE || 'simulated').trim(),
     geminiApiKey: String(env.GEMINI_API_KEY || '').trim(),
     geminiModel: String(env.GEMINI_MODEL || 'gemini-3.5-flash-lite').trim(),
@@ -21,9 +22,15 @@ export function loadConfig(env = process.env) {
   });
 }
 
-export function validateConfig(config) {
+export function validateAuthConfig(config) {
   const missing = [];
-  if (config.accessToken.length < 16) missing.push('PREVIEW_ACCESS_TOKEN');
+  if (!/^https:\/\/.+\.supabase\.co$/i.test(config.supabaseUrl)) missing.push('SUPABASE_URL');
+  if (config.supabasePublishableKey.length < 20) missing.push('SUPABASE_PUBLISHABLE_KEY');
+  return missing;
+}
+
+export function validateConfig(config) {
+  const missing = [...validateAuthConfig(config)];
   if (config.aiMode !== 'gemini') missing.push('AI_MODE=gemini');
   if (config.geminiApiKey.length < 10) missing.push('GEMINI_API_KEY');
   return missing;
