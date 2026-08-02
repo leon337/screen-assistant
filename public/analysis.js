@@ -3,14 +3,8 @@ import { getSelectedProfileId, getProfile } from './expert-profiles.js';
 
 export const ANALYSIS_STAGES = ['prepare', 'send', 'analyze', 'fallback', 'format'];
 
-function getAccessToken() {
-  const stored = sessionStorage.getItem('screen-assistant-access-token')?.trim();
-  if (stored) return stored;
-
-  const supplied = window.prompt('Digite o código de acesso do piloto fechado:')?.trim() || '';
-  if (!supplied) throw new Error('Código de acesso obrigatório para este piloto.');
-  sessionStorage.setItem('screen-assistant-access-token', supplied);
-  return supplied;
+function getStoredAccessToken() {
+  return sessionStorage.getItem('screen-assistant-access-token')?.trim() || '';
 }
 
 function confirmPrivacyOnce() {
@@ -31,7 +25,7 @@ export async function requestAnalysis({ imageBlob, question = '', profileId = ge
   if (question.length > 1000) throw new Error('A pergunta excede 1.000 caracteres.');
 
   confirmPrivacyOnce();
-  const accessToken = getAccessToken();
+  const accessToken = getStoredAccessToken();
   const selectedProfile = getProfile(profileId);
 
   onStage('prepare');
@@ -46,13 +40,13 @@ export async function requestAnalysis({ imageBlob, question = '', profileId = ge
     setTimeout(() => onStage('fallback'), 9200),
   ];
 
+  const headers = { 'x-request-id': crypto.randomUUID() };
+  if (accessToken) headers.authorization = `Bearer ${accessToken}`;
+
   try {
     const response = await fetch('/api/v1/analyze-screen', {
       method: 'POST',
-      headers: {
-        authorization: `Bearer ${accessToken}`,
-        'x-request-id': crypto.randomUUID(),
-      },
+      headers,
       body: form,
       signal,
     });
