@@ -8,9 +8,11 @@ import { analyzeWithGemini } from '../../src/server/providers/gemini.js';
 
 export const config = { runtime: 'edge' };
 
+const BASELINE_POLICY = `Quando algo estiver ilegível, escreva exatamente "não foi possível confirmar". Toda resposta deve manter uma seção ## Resumo, além das seções especializadas do perfil.`;
+
 function buildPrompt({ question, profile }) {
   const userQuestion = question || 'Explique o conteúdo principal da imagem.';
-  return `${profile.instruction}\n\nPergunta do usuário: ${userQuestion}`;
+  return `${BASELINE_POLICY}\n${profile.instruction}\n\nPergunta do usuário: ${userQuestion}`;
 }
 
 export default async function handler(request) {
