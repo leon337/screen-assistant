@@ -26,6 +26,6 @@ test('comprime a imagem antes do envio e limita a 2 MB', () => {
   assert.match(config, /2097152|2\s*\*\s*1024\s*\*\s*1024/);
 });
 
-test('publica o release da Fase 17', () => {
-  assert.match(config, /phase-17-visible-operational-status/);
+test('publica o release premium da Fase 18 R2', () => {
+  assert.match(config, /phase-18-mobile-premium-r2/);
 });
