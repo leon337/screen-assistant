@@ -25,7 +25,7 @@ test('perfil trader possui limites contra recomendação financeira', () => {
 
 test('validação lê profileId e aplica fallback seguro', () => {
   assert.match(validation, /formData\.get\(['"]profileId['"]\)/);
-  assert.match(validation, /general/);
+  assert.match(validation, /DEFAULT_EXPERT_PROFILE_ID/);
 });
 
 test('endpoint monta prompt pelo perfil e devolve metadados do especialista', () => {
