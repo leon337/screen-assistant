@@ -1,7 +1,17 @@
 import { readApiResponse } from './http.js';
-import { getAnalysisContext } from './intent-v19.js';
 
 export const ANALYSIS_STAGES = ['prepare', 'send', 'analyze', 'fallback', 'format'];
+
+let analysisContextProvider = () => ({
+  profileId: 'general',
+  taskId: 'explain',
+  responseMode: 'standard',
+});
+
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  const intentModule = await import('./intent-v19.js');
+  analysisContextProvider = intentModule.getAnalysisContext;
+}
 
 function getAccessToken() {
   const stored = sessionStorage.getItem('screen-assistant-access-token')?.trim();
@@ -32,7 +42,7 @@ export async function requestAnalysis({ imageBlob, question = '', signal, onStag
 
   confirmPrivacyOnce();
   const accessToken = getAccessToken();
-  const analysisContext = getAnalysisContext();
+  const analysisContext = analysisContextProvider();
 
   onStage('prepare');
   const form = new FormData();
