@@ -7,7 +7,7 @@ const integer = (value, fallback, { min = 0, max = Number.MAX_SAFE_INTEGER } = {
 export function loadConfig(env = process.env) {
   return Object.freeze({
     appEnv: String(env.APP_ENV || 'preview').trim(),
-    release: String(env.APP_RELEASE || 'phase-17-visible-operational-status').trim(),
+    release: String(env.APP_RELEASE || 'phase-18-mobile-premium-r2').trim(),
     accessToken: String(env.PREVIEW_ACCESS_TOKEN || '').trim(),
     aiMode: String(env.AI_MODE || 'simulated').trim(),
     geminiApiKey: String(env.GEMINI_API_KEY || '').trim(),
