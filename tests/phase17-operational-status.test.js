@@ -33,7 +33,7 @@ test('carrega o painel sem alterar a jornada principal', () => {
   assert.match(serviceWorker, /status\.css/);
 });
 
-test('preserva o painel da Fase 17 na release premium da Fase 18 R2', () => {
-  assert.match(config, /phase-18-mobile-premium-r2/);
-  assert.match(serviceWorker, /screen-assistant-v18-r2/);
+test('preserva o painel da Fase 17 na release da Fase 19', () => {
+  assert.match(config, /phase-19-intent-trader-v2/);
+  assert.match(serviceWorker, /screen-assistant-v19/);
 });
