@@ -1,5 +1,5 @@
 import { loadConfig, validateConfig } from '../../src/server/config.js';
-import { authorizeRequest } from '../../src/server/auth.js';
+import { authenticateRequest } from '../../src/server/auth.js';
 import { clientIp, consumeRateLimit } from '../../src/server/rate-limit.js';
 import { validateAnalysisInput } from '../../src/server/validation.js';
 import { buildExpertPrompt, getExpertProfile, getTaskContract } from '../../src/server/expert-profiles.js';
@@ -22,19 +22,27 @@ export default async function handler(request) {
     return apiError(requestId, appConfig.release, 503, 'CONFIG', 'Serviço temporariamente indisponível.');
   }
 
-  if (!authorizeRequest(request, appConfig.accessToken)) {
-    return apiError(requestId, appConfig.release, 401, 'AUTH_REQUIRED', 'Código de acesso inválido ou ausente.');
+  const authentication = await authenticateRequest(request, appConfig);
+  if (authentication.error) {
+    return apiError(
+      requestId,
+      appConfig.release,
+      authentication.error.status,
+      authentication.error.code,
+      authentication.error.message,
+    );
   }
 
   const ip = clientIp(request);
-  const rate = consumeRateLimit(ip, { max: appConfig.rateLimitMax, windowMs: appConfig.rateLimitWindowMs });
+  const rateKey = `${authentication.user.id}:${ip}`;
+  const rate = consumeRateLimit(rateKey, { max: appConfig.rateLimitMax, windowMs: appConfig.rateLimitWindowMs });
   if (!rate.allowed) {
     const retryAfter = Math.max(1, Math.ceil((rate.resetAt - Date.now()) / 1000));
     return apiError(
       requestId,
       appConfig.release,
       429,
-      'RATE_LIMIT_LOCAL',
+      'RATE_LIMIT_USER',
       'Limite temporário de análises atingido. Tente novamente em instantes.',
       { 'retry-after': String(retryAfter) },
     );
@@ -91,6 +99,7 @@ export default async function handler(request) {
       },
       responseMode: input.responseMode,
       image: { sizeBytes: input.image.size },
+      account: { userId: authentication.user.id },
       release: appConfig.release,
     },
   }), {
