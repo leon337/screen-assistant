@@ -1,7 +1,7 @@
-const CACHE = 'screen-assistant-v19';
+const CACHE = 'screen-assistant-v19-access';
 const APP_SHELL = [
-  '/', '/index.html', '/styles.css', '/status.css', '/premium-v18.css', '/intent-v19.css',
-  '/app.js', '/design.js', '/status.js', '/premium-v18.js', '/intent-v19.js', '/analysis.js', '/response.js', '/pwa.js',
+  '/', '/index.html', '/styles.css', '/status.css', '/premium-v18.css', '/intent-v19.css', '/pilot-access-v19.css',
+  '/app.js', '/design.js', '/status.js', '/premium-v18.js', '/intent-v19.js', '/pilot-access-v19.js', '/analysis.js', '/response.js', '/pwa.js',
   '/markdown.js', '/http.js', '/image.js', '/manifest.webmanifest',
   '/icons/icon-192.png', '/icons/icon-512.png'
 ];
