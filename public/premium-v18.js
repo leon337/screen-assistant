@@ -1,3 +1,5 @@
+const mobileApp = window.matchMedia('(max-width: 900px), (pointer: coarse)');
+
 const screenMap = {
   analyze: document.getElementById('premium-screen-analyze'),
   result: document.getElementById('premium-screen-result'),
@@ -10,6 +12,7 @@ const analyzeButton = document.getElementById('analyze');
 const barAnalyze = document.getElementById('bar-analyze');
 const newAnalysis = document.getElementById('new-analysis');
 const statusMount = document.getElementById('premium-status-mount');
+const privacyBanner = document.querySelector('.privacy-banner');
 const title = document.getElementById('premium-route-title');
 const subtitle = document.getElementById('premium-route-subtitle');
 
@@ -20,6 +23,11 @@ const routeCopy = {
 };
 
 function activateScreen(route, { updateHash = true } = {}) {
+  if (!mobileApp.matches) {
+    for (const screen of Object.values(screenMap)) screen?.setAttribute('aria-hidden', 'false');
+    return;
+  }
+
   const next = screenMap[route] ? route : 'analyze';
   document.body.dataset.premiumScreen = next;
   for (const [name, screen] of Object.entries(screenMap)) {
@@ -42,16 +50,21 @@ for (const tab of tabs) {
   tab.addEventListener('click', () => activateScreen(tab.dataset.premiumRoute));
 }
 
-function moveOperationalStatus() {
+function syncOperationalStatus() {
   const card = document.getElementById('operational-status');
-  if (card && statusMount && card.parentElement !== statusMount) statusMount.append(card);
+  if (!card) return;
+  if (mobileApp.matches && statusMount && card.parentElement !== statusMount) {
+    statusMount.append(card);
+  } else if (!mobileApp.matches && privacyBanner && card.previousElementSibling !== privacyBanner) {
+    privacyBanner.insertAdjacentElement('afterend', card);
+  }
 }
 
-new MutationObserver(moveOperationalStatus).observe(document.body, { childList: true, subtree: true });
-moveOperationalStatus();
+new MutationObserver(syncOperationalStatus).observe(document.body, { childList: true, subtree: true });
+syncOperationalStatus();
 
 function openResult() {
-  activateScreen('result');
+  if (mobileApp.matches) activateScreen('result');
 }
 
 analyzeButton?.addEventListener('click', openResult);
@@ -60,6 +73,7 @@ newAnalysis?.addEventListener('click', () => activateScreen('analyze'));
 
 if (answer) {
   new MutationObserver(() => {
+    if (!mobileApp.matches) return;
     const text = answer.textContent?.trim() || '';
     if (answer.getAttribute('aria-busy') === 'true' || (text && !['Aguardando análise.', 'A resposta aparecerá aqui depois da análise.'].includes(text))) {
       const userIsOnStatus = document.body.dataset.premiumScreen === 'status';
@@ -69,13 +83,19 @@ if (answer) {
 }
 
 function updateKeyboardState() {
-  if (!window.visualViewport) return;
+  if (!window.visualViewport || !mobileApp.matches) return;
   const keyboardOpen = window.innerHeight - window.visualViewport.height > 140;
   document.body.classList.toggle('premium-keyboard-open', keyboardOpen);
 }
 
+function syncResponsiveMode() {
+  document.body.classList.remove('premium-keyboard-open');
+  syncOperationalStatus();
+  activateScreen(location.hash.slice(1) || 'analyze', { updateHash: false });
+}
+
 window.visualViewport?.addEventListener('resize', updateKeyboardState);
 window.visualViewport?.addEventListener('scroll', updateKeyboardState);
-
 window.addEventListener('hashchange', () => activateScreen(location.hash.slice(1), { updateHash: false }));
-activateScreen(location.hash.slice(1) || 'analyze', { updateHash: false });
+mobileApp.addEventListener('change', syncResponsiveMode);
+syncResponsiveMode();
