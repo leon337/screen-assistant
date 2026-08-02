@@ -1,4 +1,5 @@
 import { readApiResponse } from './http.js';
+import { ensurePilotAccess, clearPilotAccess } from './pilot-access-v19.js';
 
 export const ANALYSIS_STAGES = ['prepare', 'send', 'analyze', 'fallback', 'format'];
 
@@ -13,35 +14,13 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   analysisContextProvider = intentModule.getAnalysisContext;
 }
 
-function getAccessToken() {
-  const stored = sessionStorage.getItem('screen-assistant-access-token')?.trim();
-  if (stored) return stored;
-
-  const supplied = window.prompt('Digite o código de acesso do piloto fechado:')?.trim() || '';
-  if (!supplied) throw new Error('Código de acesso obrigatório para este piloto.');
-  sessionStorage.setItem('screen-assistant-access-token', supplied);
-  return supplied;
-}
-
-function confirmPrivacyOnce() {
-  if (sessionStorage.getItem('screen-assistant-privacy-confirmed') === 'yes') return;
-  const accepted = window.confirm(
-    'A imagem será enviada ao Gemini para análise. Não envie senhas, dados bancários ou documentos pessoais. Continuar?',
-  );
-  if (!accepted) throw new Error('Envio cancelado antes da análise.');
-  sessionStorage.setItem('screen-assistant-privacy-confirmed', 'yes');
-}
-
-export function clearPilotAccess() {
-  sessionStorage.removeItem('screen-assistant-access-token');
-}
+export { clearPilotAccess };
 
 export async function requestAnalysis({ imageBlob, question = '', signal, onStage = () => {} }) {
   if (!(imageBlob instanceof Blob) || !imageBlob.size) throw new Error('Selecione uma imagem antes de analisar.');
   if (question.length > 1000) throw new Error('A pergunta excede 1.000 caracteres.');
 
-  confirmPrivacyOnce();
-  const accessToken = getAccessToken();
+  const accessToken = await ensurePilotAccess();
   const analysisContext = analysisContextProvider();
 
   onStage('prepare');
@@ -70,7 +49,10 @@ export async function requestAnalysis({ imageBlob, question = '', signal, onStag
     });
     const payload = await readApiResponse(response);
     if (!response.ok) {
-      if (response.status === 401) clearPilotAccess();
+      if (response.status === 401) {
+        clearPilotAccess();
+        throw new Error('Código de acesso inválido. Tente novamente com o código do piloto.');
+      }
       throw new Error(payload.error?.message || 'Falha na análise.');
     }
     onStage('format');
