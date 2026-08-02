@@ -29,7 +29,7 @@ export default async function handler(request) {
     return apiError(requestId, appConfig.release, 503, 'CONFIG', 'Serviço temporariamente indisponível.');
   }
 
-  if (!authorizeRequest(request, appConfig.accessToken)) {
+  if (appConfig.accessControlEnabled && !authorizeRequest(request, appConfig.accessToken)) {
     return apiError(requestId, appConfig.release, 401, 'AUTH_REQUIRED', 'Código de acesso inválido ou ausente.');
   }
 
