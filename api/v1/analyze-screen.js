@@ -2,14 +2,11 @@ import { loadConfig, validateConfig } from '../../src/server/config.js';
 import { authorizeRequest } from '../../src/server/auth.js';
 import { clientIp, consumeRateLimit } from '../../src/server/rate-limit.js';
 import { validateAnalysisInput } from '../../src/server/validation.js';
+import { buildExpertPrompt, getExpertProfile, getTaskContract } from '../../src/server/expert-profiles.js';
 import { apiError, responseHeaders } from '../../src/server/errors.js';
 import { analyzeWithGemini } from '../../src/server/providers/gemini.js';
 
 export const config = { runtime: 'edge' };
-
-function buildPrompt(question) {
-  return `Responda em português do Brasil. Descreva somente o que está visível na captura e separe observação direta de qualquer interpretação. Não invente, não complete lacunas e não estime nomes, números, datas, valores, rótulos ou indicadores que estejam pequenos, borrados, parcialmente ocultos ou sem nitidez suficiente. Nesses casos, escreva exatamente "não foi possível confirmar" e indique brevemente qual região da imagem ficou incerta. Não apresente suposições como fatos. Use obrigatoriamente esta estrutura em Markdown: ## Resumo, ## Observação direta, ## Interpretação e, somente quando útil, ## Detalhes técnicos. Mantenha o resumo curto, use listas e separadores quando ajudarem; nunca use HTML. Quando a imagem mostrar gráficos financeiros, limite-se a descrever elementos visuais e dados legíveis, sem garantir tendência futura nem recomendar compra, venda ou aposta. Pergunta: ${question || 'Explique o conteúdo principal.'}`;
-}
 
 export default async function handler(request) {
   const requestId = request.headers.get('x-request-id') || crypto.randomUUID();
@@ -55,10 +52,19 @@ export default async function handler(request) {
     return apiError(requestId, appConfig.release, input.error.status, input.error.code, input.error.message);
   }
 
+  const profile = getExpertProfile(input.profileId);
+  const task = getTaskContract(input.taskId);
+  const prompt = buildExpertPrompt({
+    profileId: input.profileId,
+    taskId: input.taskId,
+    responseMode: input.responseMode,
+    question: input.question,
+  });
+
   const result = await analyzeWithGemini({
     config: appConfig,
     image: input.image,
-    prompt: buildPrompt(input.question),
+    prompt,
     requestId,
   });
 
@@ -74,6 +80,16 @@ export default async function handler(request) {
       provider: 'gemini',
       model: result.model,
       fallback: result.fallback,
+      expertProfile: {
+        id: profile.id,
+        name: profile.name,
+        fallbackUsed: input.profileFallbackUsed,
+      },
+      task: {
+        id: task.id,
+        fallbackUsed: input.taskFallbackUsed,
+      },
+      responseMode: input.responseMode,
       image: { sizeBytes: input.image.size },
       release: appConfig.release,
     },

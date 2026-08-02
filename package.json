@@ -1,8 +1,8 @@
 {
   "name": "screen-assistant",
-  "version": "0.19.0",
+  "version": "0.20.0",
   "private": true,
-  "description": "Assistente visual web com captura autorizada, Gemini, voz e PWA.",
+  "description": "Assistente visual web com captura autorizada, especialistas por intenção, Gemini, voz e PWA.",
   "type": "module",
   "engines": {
     "node": ">=22"
