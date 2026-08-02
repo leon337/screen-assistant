@@ -1,4 +1,5 @@
 import { readApiResponse } from './http.js';
+import { getSelectedProfileId, getProfile } from './expert-profiles.js';
 
 export const ANALYSIS_STAGES = ['prepare', 'send', 'analyze', 'fallback', 'format'];
 
@@ -25,17 +26,19 @@ export function clearPilotAccess() {
   sessionStorage.removeItem('screen-assistant-access-token');
 }
 
-export async function requestAnalysis({ imageBlob, question = '', signal, onStage = () => {} }) {
+export async function requestAnalysis({ imageBlob, question = '', profileId = getSelectedProfileId(), signal, onStage = () => {} }) {
   if (!(imageBlob instanceof Blob) || !imageBlob.size) throw new Error('Selecione uma imagem antes de analisar.');
   if (question.length > 1000) throw new Error('A pergunta excede 1.000 caracteres.');
 
   confirmPrivacyOnce();
   const accessToken = getAccessToken();
+  const selectedProfile = getProfile(profileId);
 
   onStage('prepare');
   const form = new FormData();
   form.append('image', imageBlob, imageBlob.type === 'image/jpeg' ? 'image.jpg' : 'image.webp');
   form.append('question', question);
+  form.append('profileId', selectedProfile.id);
 
   onStage('send');
   const timers = [
@@ -58,6 +61,15 @@ export async function requestAnalysis({ imageBlob, question = '', signal, onStag
       if (response.status === 401) clearPilotAccess();
       throw new Error(payload.error?.message || 'Falha na análise.');
     }
+
+    const expert = payload.data?.expertProfile || {
+      id: selectedProfile.id,
+      name: selectedProfile.name,
+      fallbackUsed: false,
+    };
+    payload.data.expertProfile = expert;
+    payload.data.model = `${expert.name} · ${payload.data.model}`;
+
     onStage('format');
     return payload;
   } finally {
