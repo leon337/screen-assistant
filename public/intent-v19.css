@@ -1,0 +1,178 @@
+.intent-v19 {
+  margin: 18px 0;
+  padding: 18px;
+  border: 1px solid rgba(124, 140, 255, .22);
+  border-radius: 18px;
+  background: rgba(10, 16, 34, .72);
+}
+
+.intent-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.intent-heading h2 {
+  margin: .2rem 0 0;
+  font-size: 1.18rem;
+}
+
+.suggested-expert {
+  padding: 7px 10px;
+  border: 1px solid rgba(126, 142, 255, .28);
+  border-radius: 999px;
+  color: #dfe4ff;
+  font-size: .76rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.intent-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.intent-card {
+  min-height: 76px;
+  padding: 13px;
+  border: 1px solid rgba(139, 153, 204, .18);
+  border-radius: 14px;
+  background: rgba(18, 27, 53, .74);
+  color: #eef2ff;
+  text-align: left;
+}
+
+.intent-card strong,
+.intent-card small {
+  display: block;
+}
+
+.intent-card small {
+  margin-top: 4px;
+  color: #9ca7ca;
+  line-height: 1.35;
+}
+
+.intent-card.is-active {
+  border-color: rgba(129, 110, 255, .78);
+  background: linear-gradient(135deg, rgba(83, 74, 201, .38), rgba(31, 46, 91, .82));
+  box-shadow: 0 0 0 2px rgba(121, 104, 255, .16);
+}
+
+.trader-options {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid rgba(122, 221, 173, .18);
+  border-radius: 14px;
+  background: rgba(29, 88, 66, .12);
+}
+
+.trader-options.hidden {
+  display: none;
+}
+
+.trader-introduction {
+  margin-bottom: 12px;
+}
+
+.trader-introduction strong {
+  color: #d4ffe8;
+  font-size: 1rem;
+}
+
+.trader-introduction p {
+  margin: 5px 0 0;
+  color: #b8c8c1;
+  font-size: .88rem;
+  line-height: 1.5;
+}
+
+.trader-options label,
+.preference-grid label {
+  display: grid;
+  gap: 7px;
+  color: #cbd3ef;
+  font-size: .82rem;
+  font-weight: 750;
+}
+
+.trader-options select,
+.preference-grid select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid rgba(140, 155, 210, .22);
+  border-radius: 12px;
+  background: #111a34;
+  color: #f3f5ff;
+}
+
+.analysis-preferences {
+  margin-top: 12px;
+  border-top: 1px solid rgba(139, 153, 204, .15);
+  padding-top: 10px;
+}
+
+.analysis-preferences summary {
+  color: #aeb8da;
+  cursor: pointer;
+  font-size: .84rem;
+  font-weight: 750;
+}
+
+.preference-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+@media (max-width: 900px), (pointer: coarse) {
+  .screen-details {
+    display: none;
+  }
+
+  .intent-v19 {
+    margin: 12px 0;
+    padding: 14px;
+  }
+
+  .intent-heading {
+    display: block;
+  }
+
+  .suggested-expert {
+    display: inline-block;
+    margin-top: 9px;
+  }
+
+  .intent-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .intent-card {
+    min-height: 64px;
+  }
+
+  .preference-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body:not(.v19-has-image) #bar-analyze {
+    display: none;
+  }
+
+  body.v19-has-image #bar-camera,
+  body.v19-has-image #bar-gallery {
+    display: none;
+  }
+
+  body:not(.v19-has-answer) .response-actions,
+  body:not(.v19-has-answer) .more-actions,
+  body:not(.v19-has-answer) .response-meta {
+    display: none;
+  }
+}
