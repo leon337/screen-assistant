@@ -38,10 +38,10 @@ test('move o painel operacional para a tela de estado', () => {
   assert.match(premium, /statusMount\.append/);
 });
 
-test('carrega os assets premium no runtime e no PWA', () => {
+test('preserva assets premium no runtime e no PWA da Fase 19', () => {
   assert.match(design, /premium-v18\.js/);
   assert.match(html, /premium-v18\.css/);
   assert.match(sw, /premium-v18\.css/);
   assert.match(sw, /premium-v18\.js/);
-  assert.match(sw, /screen-assistant-v18-r2/);
+  assert.match(sw, /screen-assistant-v19/);
 });
