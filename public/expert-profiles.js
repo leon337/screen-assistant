@@ -7,8 +7,10 @@ export const EXPERT_PROFILES = [
 ];
 
 const STORAGE_KEY = 'screen-assistant-expert-profile';
+const hasBrowserDom = typeof document !== 'undefined' && typeof localStorage !== 'undefined';
 
 export function getSelectedProfileId() {
+  if (!hasBrowserDom) return 'general';
   const select = document.getElementById('expert-profile');
   const selected = select?.value || localStorage.getItem(STORAGE_KEY) || 'general';
   return EXPERT_PROFILES.some((profile) => profile.id === selected) ? selected : 'general';
@@ -34,7 +36,7 @@ function updateDescription(select, description) {
 }
 
 export function installExpertProfileSelector() {
-  if (document.getElementById('expert-profile')) return;
+  if (!hasBrowserDom || document.getElementById('expert-profile')) return;
   installStylesheet();
 
   const question = document.getElementById('question');
@@ -85,10 +87,7 @@ export function installExpertProfileSelector() {
     reanalyze.addEventListener('click', () => {
       select.focus();
       select.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      const onChange = () => {
-        select.removeEventListener('change', onChange);
-        repeatButton.click();
-      };
+      const onChange = () => repeatButton.click();
       select.addEventListener('change', onChange, { once: true });
     });
     repeatButton.insertAdjacentElement('afterend', reanalyze);
@@ -100,8 +99,10 @@ export function installExpertProfileSelector() {
   }
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', installExpertProfileSelector, { once: true });
-} else {
-  installExpertProfileSelector();
+if (hasBrowserDom) {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', installExpertProfileSelector, { once: true });
+  } else {
+    installExpertProfileSelector();
+  }
 }
