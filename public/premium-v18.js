@@ -13,6 +13,10 @@ const barAnalyze = document.getElementById('bar-analyze');
 const newAnalysis = document.getElementById('new-analysis');
 const statusMount = document.getElementById('premium-status-mount');
 const privacyBanner = document.querySelector('.privacy-banner');
+const premiumTopActions = document.querySelector('.premium-top-actions');
+const desktopHeaderActions = document.querySelector('.header-actions');
+const layoutToggle = document.getElementById('layout-toggle');
+const installApp = document.getElementById('install-app');
 const title = document.getElementById('premium-route-title');
 const subtitle = document.getElementById('premium-route-subtitle');
 
@@ -60,6 +64,13 @@ function syncOperationalStatus() {
   }
 }
 
+function syncHeaderActions() {
+  const target = mobileApp.matches ? premiumTopActions : desktopHeaderActions;
+  if (!target) return;
+  if (layoutToggle && layoutToggle.parentElement !== target) target.append(layoutToggle);
+  if (installApp && installApp.parentElement !== target) target.append(installApp);
+}
+
 new MutationObserver(syncOperationalStatus).observe(document.body, { childList: true, subtree: true });
 syncOperationalStatus();
 
@@ -90,6 +101,7 @@ function updateKeyboardState() {
 
 function syncResponsiveMode() {
   document.body.classList.remove('premium-keyboard-open');
+  syncHeaderActions();
   syncOperationalStatus();
   activateScreen(location.hash.slice(1) || 'analyze', { updateHash: false });
 }
