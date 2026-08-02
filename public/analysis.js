@@ -1,5 +1,5 @@
 import { readApiResponse } from './http.js';
-import { ensurePilotAccess, clearPilotAccess } from './pilot-access-v19.js';
+import { getAccessToken, signOut } from './auth-v20.js';
 
 export const ANALYSIS_STAGES = ['prepare', 'send', 'analyze', 'fallback', 'format'];
 
@@ -14,13 +14,12 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   analysisContextProvider = intentModule.getAnalysisContext;
 }
 
-export { clearPilotAccess };
-
 export async function requestAnalysis({ imageBlob, question = '', signal, onStage = () => {} }) {
   if (!(imageBlob instanceof Blob) || !imageBlob.size) throw new Error('Selecione uma imagem antes de analisar.');
   if (question.length > 1000) throw new Error('A pergunta excede 1.000 caracteres.');
 
-  const accessToken = await ensurePilotAccess();
+  const accessToken = await getAccessToken();
+  if (!accessToken) throw new Error('Entre na sua conta para realizar uma análise.');
   const analysisContext = analysisContextProvider();
 
   onStage('prepare');
@@ -50,8 +49,8 @@ export async function requestAnalysis({ imageBlob, question = '', signal, onStag
     const payload = await readApiResponse(response);
     if (!response.ok) {
       if (response.status === 401) {
-        clearPilotAccess();
-        throw new Error('Código de acesso inválido. Tente novamente com o código do piloto.');
+        await signOut();
+        throw new Error('Sua sessão expirou. Recarregue a página e entre novamente.');
       }
       throw new Error(payload.error?.message || 'Falha na análise.');
     }
