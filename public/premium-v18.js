@@ -21,9 +21,9 @@ const title = document.getElementById('premium-route-title');
 const subtitle = document.getElementById('premium-route-subtitle');
 
 const routeCopy = {
-  analyze: ['Nova análise', 'Escolha uma imagem e faça sua pergunta.'],
-  result: ['Resultado', 'Leia, copie, ouça ou compartilhe a resposta.'],
-  status: ['Estado do app', 'Confira a publicação e a configuração atual.'],
+  analyze: ['Nova análise', 'Escolha uma imagem e diga o que deseja descobrir.'],
+  result: ['Resultado', 'Leia a resposta principal e abra os detalhes quando necessário.'],
+  status: ['Mais', 'Estado do sistema e opções secundárias.'],
 };
 
 function activateScreen(route, { updateHash = true } = {}) {
