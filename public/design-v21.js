@@ -8,6 +8,23 @@ const INTENT_ICONS = Object.freeze({
   trader: '↗',
 });
 
+let initialized = false;
+let synchronizationScheduled = false;
+
+function setText(element, value) {
+  if (element && element.textContent !== value) element.textContent = value;
+}
+
+function setHtml(element, value) {
+  if (element && element.innerHTML !== value) element.innerHTML = value;
+}
+
+function setClass(element, className, enabled) {
+  if (!element) return;
+  const active = element.classList.contains(className);
+  if (active !== enabled) element.classList.toggle(className, enabled);
+}
+
 function createJourneyHeader() {
   if (!hasDom || document.getElementById('design-v21-journey')) return;
   const heading = document.querySelector('.premium-screen-heading');
@@ -53,11 +70,13 @@ function improveCopy() {
   const workspaceText = document.querySelector('.workspace-heading > p');
   const analyzeTab = document.querySelector('[data-premium-route="analyze"] span:last-child');
 
-  if (routeTitle && document.body.dataset.premiumScreen !== 'result') routeTitle.textContent = 'Nova análise';
-  if (routeSubtitle && document.body.dataset.premiumScreen !== 'result') routeSubtitle.textContent = 'Envie uma imagem e escolha o que deseja descobrir.';
-  if (workspaceTitle) workspaceTitle.textContent = 'Envie uma imagem';
-  if (workspaceText) workspaceText.textContent = 'Você poderá escolher o especialista depois.';
-  if (analyzeTab) analyzeTab.textContent = 'Início';
+  if (document.body.dataset.premiumScreen !== 'result') {
+    setText(routeTitle, 'Nova análise');
+    setText(routeSubtitle, 'Envie uma imagem e escolha o que deseja descobrir.');
+  }
+  setText(workspaceTitle, 'Envie uma imagem');
+  setText(workspaceText, 'Você poderá escolher o especialista depois.');
+  setText(analyzeTab, 'Início');
 }
 
 function addSelectionSummary() {
@@ -83,31 +102,45 @@ function addResultLead() {
 }
 
 function synchronizeState() {
-  if (!hasDom) return;
+  if (!hasDom || document.body.dataset.authState !== 'authenticated') return;
   const hasImage = document.body.classList.contains('v19-has-image');
   const hasAnswer = document.body.classList.contains('v19-has-answer');
   const activeIntent = document.querySelector('[data-intent-id].is-active');
 
-  document.querySelector('[data-v21-step="image"]')?.classList.toggle('is-complete', hasImage);
-  document.querySelector('[data-v21-step="intent"]')?.classList.toggle('is-active', hasImage && !hasAnswer);
-  document.querySelector('[data-v21-step="result"]')?.classList.toggle('is-active', hasAnswer);
-  document.getElementById('design-v21-selection-summary')?.classList.toggle('is-visible', hasImage);
-  document.getElementById('design-v21-result-lead')?.classList.toggle('is-visible', hasAnswer);
+  setClass(document.querySelector('[data-v21-step="image"]'), 'is-complete', hasImage);
+  setClass(document.querySelector('[data-v21-step="intent"]'), 'is-active', hasImage && !hasAnswer);
+  setClass(document.querySelector('[data-v21-step="result"]'), 'is-active', hasAnswer);
+  setClass(document.getElementById('design-v21-selection-summary'), 'is-visible', hasImage);
+  setClass(document.getElementById('design-v21-result-lead'), 'is-visible', hasAnswer);
 
   const analyze = document.getElementById('analyze');
   const barAnalyze = document.getElementById('bar-analyze');
   const label = activeIntent?.querySelector('strong')?.textContent?.trim();
-  if (analyze && label) analyze.innerHTML = `<span aria-hidden="true">✦</span> Analisar: ${label}`;
-  if (barAnalyze && label) barAnalyze.innerHTML = `<span aria-hidden="true">✦</span> Analisar`;
+  if (label) {
+    setHtml(analyze, `<span aria-hidden="true">✦</span> Analisar: ${label}`);
+    setHtml(barAnalyze, '<span aria-hidden="true">✦</span> Analisar');
+  }
 }
 
-function observe() {
-  if (!hasDom) return;
-  new MutationObserver(() => {
-    enhanceIntentCards();
-    improveCopy();
-    synchronizeState();
-  }).observe(document.body, {
+function synchronizeDesign() {
+  enhanceIntentCards();
+  improveCopy();
+  synchronizeState();
+}
+
+function scheduleSynchronization() {
+  if (synchronizationScheduled) return;
+  synchronizationScheduled = true;
+  const run = () => {
+    synchronizationScheduled = false;
+    synchronizeDesign();
+  };
+  if (typeof requestAnimationFrame === 'function') requestAnimationFrame(run);
+  else queueMicrotask(run);
+}
+
+function observeApplication() {
+  new MutationObserver(scheduleSynchronization).observe(document.body, {
     subtree: true,
     childList: true,
     attributes: true,
@@ -115,13 +148,34 @@ function observe() {
   });
 }
 
-if (hasDom) {
-  document.body.classList.add('design-v21');
+function initializeDesign() {
+  if (!hasDom || initialized || document.body.dataset.authState !== 'authenticated') return;
+  initialized = true;
   createJourneyHeader();
   addSelectionSummary();
   addResultLead();
-  enhanceIntentCards();
-  improveCopy();
-  synchronizeState();
-  observe();
+  synchronizeDesign();
+  observeApplication();
 }
+
+function waitForAuthentication() {
+  if (!hasDom) return;
+  document.body.classList.add('design-v21');
+
+  if (document.body.dataset.authState === 'authenticated') {
+    initializeDesign();
+    return;
+  }
+
+  const authObserver = new MutationObserver(() => {
+    if (document.body.dataset.authState !== 'authenticated') return;
+    authObserver.disconnect();
+    initializeDesign();
+  });
+  authObserver.observe(document.body, {
+    attributes: true,
+    attributeFilter: ['data-auth-state'],
+  });
+}
+
+waitForAuthentication();
