@@ -3,6 +3,7 @@ import { readApiResponse } from './http.js';
 
 const SETTINGS_KEY = 'screen-assistant-natural-voice-v24a';
 const MAX_CLIENT_CHARS = 4000;
+const PRELOAD_DELAY_MS = 450;
 const EMPTY_ANSWERS = new Set([
   'Aguardando análise.',
   'A resposta aparecerá aqui depois da análise.',
@@ -15,6 +16,10 @@ let objectUrl = '';
 let generating = false;
 let commandsWereArmed = false;
 let requestController = null;
+let preloadTimer = null;
+let preloadJob = null;
+let cachedAudio = null;
+let answerObserver = null;
 
 const state = loadSettings();
 
@@ -38,6 +43,7 @@ function dispatchState() {
       mode: state.mode,
       speaking: isSpeaking(),
       generating,
+      preloaded: isCurrentAnswerPreloaded(),
     },
   }));
 }
@@ -58,6 +64,25 @@ function answerText() {
     .replace(/\n{3,}/g, '\n\n')
     .trim()
     .slice(0, MAX_CLIENT_CHARS);
+}
+
+function speechKey(text) {
+  let hash = 2166136261;
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `${text.length}:${(hash >>> 0).toString(36)}`;
+}
+
+function currentAnswerKey() {
+  const text = answerText();
+  return text ? speechKey(text) : '';
+}
+
+function isCurrentAnswerPreloaded() {
+  const key = currentAnswerKey();
+  return Boolean(key && cachedAudio?.key === key);
 }
 
 function writeAscii(view, offset, value) {
@@ -172,9 +197,92 @@ async function requestNaturalAudio(text, signal) {
   return payload.data;
 }
 
-export function stopNaturalSpeech({ resume = true, announce = true } = {}) {
+function cancelPreload() {
+  if (preloadTimer) window.clearTimeout(preloadTimer);
+  preloadTimer = null;
+  preloadJob?.controller.abort();
+  preloadJob = null;
+}
+
+function invalidateAudioFor(text) {
+  const key = text ? speechKey(text) : '';
+  if (cachedAudio && cachedAudio.key !== key) cachedAudio = null;
+  if (preloadJob && preloadJob.key !== key) cancelPreload();
+}
+
+export function preloadNaturalSpeech() {
+  if (!hasWindow || state.mode !== 'natural') return Promise.resolve(null);
+  const text = answerText();
+  if (!text) return Promise.resolve(null);
+
+  const key = speechKey(text);
+  invalidateAudioFor(text);
+  if (cachedAudio?.key === key) return Promise.resolve(cachedAudio.data);
+  if (preloadJob?.key === key) return preloadJob.promise;
+
+  const controller = new AbortController();
+  const job = { key, controller, promise: null };
+  job.promise = requestNaturalAudio(text, controller.signal)
+    .then((data) => {
+      if (currentAnswerKey() === key && state.mode === 'natural') {
+        cachedAudio = { key, data };
+        dispatchState();
+      }
+      return data;
+    })
+    .catch((error) => {
+      if (error?.name !== 'AbortError') {
+        console.warn('Pré-carregamento da voz natural indisponível.', error);
+      }
+      return null;
+    })
+    .finally(() => {
+      if (preloadJob === job) preloadJob = null;
+    });
+  preloadJob = job;
+  return job.promise;
+}
+
+function queueNaturalSpeechPreload() {
+  if (!hasWindow) return;
+  if (preloadTimer) window.clearTimeout(preloadTimer);
+  preloadTimer = null;
+
+  const text = answerText();
+  invalidateAudioFor(text);
+  if (!text || state.mode !== 'natural' || cachedAudio?.key === speechKey(text)) {
+    dispatchState();
+    return;
+  }
+
+  preloadTimer = window.setTimeout(() => {
+    preloadTimer = null;
+    void preloadNaturalSpeech();
+  }, PRELOAD_DELAY_MS);
+}
+
+async function resolveNaturalAudio(text) {
+  const key = speechKey(text);
+  if (cachedAudio?.key === key) return { data: cachedAudio.data, source: 'cache' };
+
+  if (preloadJob?.key === key) {
+    requestController = preloadJob.controller;
+    const data = await preloadJob.promise;
+    requestController = null;
+    if (data) return { data, source: 'preload' };
+  }
+
+  requestController = new AbortController();
+  const data = await requestNaturalAudio(text, requestController.signal);
+  requestController = null;
+  cachedAudio = { key, data };
+  return { data, source: 'network' };
+}
+
+export function stopNaturalSpeech({ resume = true, announce = true, preservePreload = false } = {}) {
   requestController?.abort();
   requestController = null;
+  if (!preservePreload) cancelPreload();
   if (!player) return;
   cleanupPlayback({ resume });
   if (announce) setStatus('Leitura interrompida.');
@@ -195,10 +303,12 @@ export function getMode() {
 export function setMode(mode) {
   state.mode = mode === 'device' ? 'device' : 'natural';
   saveSettings();
+  if (state.mode === 'natural') queueNaturalSpeechPreload();
+  else cancelPreload();
   updateModeUi();
   setStatus(
     state.mode === 'natural'
-      ? 'Voz natural ativada. Em caso de falha, a voz do aparelho será usada.'
+      ? 'Voz natural ativada. O áudio será preparado antecipadamente.'
       : 'Voz do aparelho ativada.',
     'success',
   );
@@ -218,17 +328,25 @@ export async function speakAnswerNaturally() {
     return true;
   }
 
-  stopNaturalSpeech({ resume: false, announce: false });
+  stopNaturalSpeech({ resume: false, announce: false, preservePreload: true });
   window.speechSynthesis?.cancel();
-  pauseCommands();
-  requestController = new AbortController();
-  generating = true;
-  setStatus('Preparando voz natural em português do Brasil…', 'success');
+  const key = speechKey(text);
+  const ready = cachedAudio?.key === key;
+  generating = !ready;
+  setStatus(
+    ready
+      ? 'Iniciando voz natural…'
+      : preloadJob?.key === key
+        ? 'Finalizando voz natural…'
+        : 'Preparando voz natural em português do Brasil…',
+    'success',
+  );
   dispatchState();
 
   try {
-    const data = await requestNaturalAudio(text, requestController.signal);
-    requestController = null;
+    const { data } = await resolveNaturalAudio(text);
+    if (!data || currentAnswerKey() !== key) throw new Error('A resposta mudou antes da leitura.');
+
     const wav = pcmBase64ToWavBlob(data.audioBase64, {
       sampleRate: data.sampleRate,
       channels: data.channels,
@@ -237,6 +355,7 @@ export async function speakAnswerNaturally() {
     objectUrl = URL.createObjectURL(wav);
     player.src = objectUrl;
     player.playbackRate = currentRate();
+    pauseCommands();
     player.onended = () => {
       setStatus('Leitura natural concluída.');
       cleanupPlayback();
@@ -307,6 +426,20 @@ function mountModeUi() {
   return true;
 }
 
+function observeAnswerForPreload() {
+  const answer = document.getElementById('answer');
+  if (!answer) return;
+  answerObserver = new MutationObserver(queueNaturalSpeechPreload);
+  answerObserver.observe(answer, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ['aria-busy'],
+  });
+  queueNaturalSpeechPreload();
+}
+
 function initialize() {
   if (!hasWindow || typeof document === 'undefined') return;
 
@@ -321,15 +454,21 @@ function initialize() {
     observer.observe(document.documentElement, { childList: true, subtree: true });
   }
 
+  observeAnswerForPreload();
   player?.addEventListener('play', dispatchState);
   player?.addEventListener('pause', dispatchState);
-  window.addEventListener('beforeunload', () => stopNaturalSpeech({ resume: false, announce: false }));
+  window.addEventListener('beforeunload', () => {
+    answerObserver?.disconnect();
+    stopNaturalSpeech({ resume: false, announce: false });
+  });
 
   window.screenAssistantNaturalVoice = Object.freeze({
     speakAnswer: speakAnswerNaturally,
+    preload: preloadNaturalSpeech,
     stop: stopNaturalSpeech,
     isSpeaking,
     isBusy,
+    isPreloaded: isCurrentAnswerPreloaded,
     getMode,
     setMode,
     setRate: setNaturalPlaybackRate,
