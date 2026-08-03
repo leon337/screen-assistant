@@ -31,11 +31,22 @@ test('velocidade possui faixa legível e preferência local', () => {
   assert.match(styles, /#voice-rate-v23/);
 });
 
-test('vozes em português são priorizadas e atualizadas', () => {
-  assert.match(voice, /\^pt\(\?:-\|\$\)/);
-  assert.match(voice, /\^pt-BR\$/);
-  assert.match(voice, /voiceschanged/);
-  assert.match(voice, /Voz do aparelho/);
+test('vozes ficam restritas ao português do Brasil', () => {
+  assert.match(voice, /TARGET_LANGUAGE = 'pt-BR'/);
+  assert.match(voice, /replace\(\/_\/g, '-'\)/);
+  assert.match(voice, /language === 'pt-br'/);
+  assert.match(voice, /language\.startsWith\('pt-br-'\)/);
+  assert.match(voice, /filter\(isBrazilianPortugueseVoice\)/);
+  assert.match(voice, /Voz em português \(Brasil\)/);
+  assert.match(voice, /Somente vozes pt-BR são exibidas/);
+  assert.doesNotMatch(voice, /portuguese\.length \? portuguese : voices/);
+  assert.doesNotMatch(voice, /return voices;/);
+});
+
+test('preferência antiga incompatível não é reutilizada', () => {
+  assert.match(voice, /voices\.find\(\(voice\) => voice\.voiceURI === previousVoiceURI\)/);
+  assert.match(voice, /state\.voiceURI = ''/);
+  assert.match(voice, /selectedVoice && isBrazilianPortugueseVoice\(selectedVoice\)/);
 });
 
 test('microfone começa desligado e exige ativação explícita', () => {
@@ -54,8 +65,18 @@ test('política HTTP permite microfone somente para a própria aplicação', () 
 test('wake phrase e janela de segundo comando são implementadas', () => {
   assert.match(voice, /screen assistant\\b/);
   assert.match(voice, /screen assistente\\b/);
+  assert.match(voice, /scrim assistente\\b/);
   assert.match(voice, /WAKE_WINDOW_MS = 8000/);
   assert.match(voice, /Date\.now\(\) <= wakeUntil/);
+});
+
+test('reconhecimento móvel usa sessões curtas e alternativas', () => {
+  assert.match(voice, /instance\.lang = TARGET_LANGUAGE/);
+  assert.match(voice, /instance\.continuous = false/);
+  assert.match(voice, /instance\.maxAlternatives = 5/);
+  assert.match(voice, /function chooseTranscript/);
+  assert.match(voice, /splitWakePhrase\(transcript\) !== null/);
+  assert.match(voice, /scheduleRecognitionRestart/);
 });
 
 test('comandos controlam leitura velocidade e análise', () => {
