@@ -51,3 +51,18 @@ test('PWA versiona e guarda os novos assets', () => {
   assert.match(serviceWorker, /design-v21\.css/);
   assert.match(serviceWorker, /auth-v21\.css/);
 });
+
+test('camada visual não observa nem modifica a tela de login', () => {
+  assert.match(designJs, /document\.body\.dataset\.authState !== 'authenticated'/);
+  assert.match(designJs, /waitForAuthentication/);
+  assert.match(designJs, /attributeFilter: \['data-auth-state'\]/);
+  assert.match(designJs, /authObserver\.disconnect\(\)/);
+});
+
+test('sincronização visual evita reescritas contínuas do DOM', () => {
+  assert.match(designJs, /function setText\(/);
+  assert.match(designJs, /element\.textContent !== value/);
+  assert.match(designJs, /function setHtml\(/);
+  assert.match(designJs, /element\.innerHTML !== value/);
+  assert.match(designJs, /requestAnimationFrame\(run\)/);
+});
