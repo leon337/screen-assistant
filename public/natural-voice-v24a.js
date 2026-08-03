@@ -14,6 +14,7 @@ const player = hasWindow ? new Audio() : null;
 let objectUrl = '';
 let generating = false;
 let commandsWereArmed = false;
+let requestController = null;
 
 const state = loadSettings();
 
@@ -147,7 +148,7 @@ function cleanupPlayback({ resume = true } = {}) {
   dispatchState();
 }
 
-async function requestNaturalAudio(text) {
+async function requestNaturalAudio(text, signal) {
   const accessToken = await getAccessToken();
   if (!accessToken) throw new Error('Entre na sua conta para usar a voz natural.');
 
@@ -160,6 +161,7 @@ async function requestNaturalAudio(text) {
     },
     body: JSON.stringify({ text }),
     cache: 'no-store',
+    signal,
   });
 
   const payload = await readApiResponse(response);
@@ -170,10 +172,12 @@ async function requestNaturalAudio(text) {
   return payload.data;
 }
 
-export function stopNaturalSpeech() {
+export function stopNaturalSpeech({ resume = true, announce = true } = {}) {
+  requestController?.abort();
+  requestController = null;
   if (!player) return;
-  cleanupPlayback();
-  setStatus('Leitura interrompida.');
+  cleanupPlayback({ resume });
+  if (announce) setStatus('Leitura interrompida.');
 }
 
 export function isSpeaking() {
@@ -214,15 +218,17 @@ export async function speakAnswerNaturally() {
     return true;
   }
 
-  stopNaturalSpeech();
+  stopNaturalSpeech({ resume: false, announce: false });
   window.speechSynthesis?.cancel();
   pauseCommands();
+  requestController = new AbortController();
   generating = true;
   setStatus('Preparando voz natural em português do Brasil…', 'success');
   dispatchState();
 
   try {
-    const data = await requestNaturalAudio(text);
+    const data = await requestNaturalAudio(text, requestController.signal);
+    requestController = null;
     const wav = pcmBase64ToWavBlob(data.audioBase64, {
       sampleRate: data.sampleRate,
       channels: data.channels,
@@ -246,7 +252,13 @@ export async function speakAnswerNaturally() {
     dispatchState();
     return true;
   } catch (error) {
+    const cancelled = error?.name === 'AbortError';
+    requestController = null;
     cleanupPlayback();
+    if (cancelled) {
+      setStatus('Geração da voz cancelada.');
+      return true;
+    }
     setStatus(`${error instanceof Error ? error.message : 'A voz natural falhou.'} Usando a voz do aparelho.`, 'error');
     return false;
   }
@@ -311,7 +323,7 @@ function initialize() {
 
   player?.addEventListener('play', dispatchState);
   player?.addEventListener('pause', dispatchState);
-  window.addEventListener('beforeunload', () => cleanupPlayback({ resume: false }));
+  window.addEventListener('beforeunload', () => stopNaturalSpeech({ resume: false, announce: false }));
 
   window.screenAssistantNaturalVoice = Object.freeze({
     speakAnswer: speakAnswerNaturally,
