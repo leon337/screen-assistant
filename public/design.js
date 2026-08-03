@@ -4,8 +4,9 @@ import { initializeAuthGate } from './auth-v20-ui.js';
 
 document.body.dataset.authState = 'loading';
 document.body.dataset.voiceControls = 'loading';
+document.body.dataset.voiceDesign = 'loading';
 
-for (const href of ['/auth-v20.css', '/auth-v21.css', '/design-v21.css', '/result-v22.css', '/first-screen-v22a.css', '/first-screen-v22a-desktop.css', '/voice-v23.css']) {
+for (const href of ['/auth-v20.css', '/auth-v21.css', '/design-v21.css', '/result-v22.css', '/first-screen-v22a.css', '/first-screen-v22a-desktop.css', '/voice-v23.css', '/voice-v24a.css']) {
   const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.href = href;
@@ -19,6 +20,8 @@ await import('./first-screen-v22a.js');
 await import('./voice-v23.js');
 await import('./voice-v23-build.js');
 document.body.dataset.voiceControls = 'ready';
+await import('./voice-v24a.js');
+document.body.dataset.voiceDesign = 'ready';
 
 const answer = document.getElementById('answer');
 
