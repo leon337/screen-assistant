@@ -30,8 +30,9 @@ with check ((select auth.uid()) = id);
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
-security definer set search_path = ''
-as $$
+security definer
+set search_path = ''
+as $function$
 begin
   insert into public.profiles (id, display_name)
   values (
@@ -41,9 +42,11 @@ begin
   on conflict (id) do nothing;
   return new;
 end;
-$$;
+$function$;
 
-revoke all on function public.handle_new_user() from public;
+revoke execute on function public.handle_new_user() from public;
+revoke execute on function public.handle_new_user() from anon;
+revoke execute on function public.handle_new_user() from authenticated;
 
 create or replace trigger on_auth_user_created
 after insert on auth.users
@@ -54,12 +57,12 @@ returns trigger
 language plpgsql
 security invoker
 set search_path = ''
-as $$
+as $function$
 begin
   new.updated_at = now();
   return new;
 end;
-$$;
+$function$;
 
 create or replace trigger profiles_set_updated_at
 before update on public.profiles
