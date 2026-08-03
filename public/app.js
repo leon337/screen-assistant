@@ -1,6 +1,7 @@
 import { renderMarkdown, markdownToPlainText } from '/markdown.js';
 import { compressImageFile, formatBytes } from '/image.js';
 import { ANALYSIS_STAGES, requestAnalysis } from '/analysis.js';
+import { isAnalysisContextValid, resetAnalysisContext } from '/intent-v22a.js';
 import { answerToShareText, renderStructuredAnswer } from '/response.js';
 import { setupPwa } from '/pwa.js';
 
@@ -70,16 +71,17 @@ function isBusy() { return Boolean(analysisController); }
 function updateControls() {
   const sharing = Boolean(screenStream);
   const busy = isBusy();
+  const contextReady = isAnalysisContextValid();
   elements.capture.disabled = !sharing || preparingImage || busy;
   elements.stop.disabled = !sharing;
-  elements.analyze.disabled = !imageBlob || preparingImage || busy;
+  elements.analyze.disabled = !imageBlob || !contextReady || preparingImage || busy;
   elements.barAnalyze.disabled = elements.analyze.disabled;
   elements.camera.disabled = preparingImage || busy;
   elements.gallery.disabled = preparingImage || busy;
   elements.barCamera.disabled = elements.camera.disabled;
   elements.barGallery.disabled = elements.gallery.disabled;
   elements.cancelAnalysis.classList.toggle('hidden', !busy);
-  elements.repeatAnalysis.disabled = !imageBlob || busy;
+  elements.repeatAnalysis.disabled = !imageBlob || !contextReady || busy;
 }
 
 function resetResponse({ keepMessage = false } = {}) {
@@ -134,7 +136,7 @@ async function prepareSelectedFile(file, source) {
   try {
     const result = await compressImageFile(file, { maxDimension: 1600, maxBytes: 2 * 1024 * 1024 });
     installImage(result.blob, { width: result.width, height: result.height, source, originalBytes: result.originalBytes });
-    setStatus(`Imagem da ${source.toLowerCase()} pronta para análise.`, 'success');
+    setStatus(`Imagem da ${source.toLowerCase()} pronta. Escolha o que deseja descobrir.`, 'success');
   } catch (error) {
     setStatus(error instanceof Error ? error.message : 'Não foi possível preparar a imagem.', 'error');
   } finally {
@@ -147,6 +149,11 @@ async function prepareSelectedFile(file, source) {
 
 async function analyzeCurrentImage() {
   if (!imageBlob || isBusy()) return;
+  if (!isAnalysisContextValid()) {
+    setStatus('Escolha o que deseja descobrir antes de analisar.', 'error');
+    document.getElementById('intent-v22a-title')?.focus();
+    return;
+  }
   analysisController = new AbortController();
   const controller = analysisController;
   const timeout = setTimeout(() => controller.abort('timeout'), 22000);
@@ -258,12 +265,15 @@ elements.analyze.addEventListener('click', analyzeCurrentImage);
 elements.barAnalyze.addEventListener('click', analyzeCurrentImage);
 elements.repeatAnalysis.addEventListener('click', analyzeCurrentImage);
 elements.cancelAnalysis.addEventListener('click', () => analysisController?.abort('user'));
+document.addEventListener('analysis-context-change', updateControls);
 
 elements.newAnalysis.addEventListener('click', () => {
   elements.question.value = '';
+  clearImage();
+  resetAnalysisContext();
   resetResponse();
   elements.imagePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  setStatus(imageBlob ? 'Pronto para uma nova pergunta sobre a imagem atual.' : 'Escolha uma imagem para iniciar.');
+  setStatus('Escolha uma imagem para iniciar uma nova análise.');
 });
 
 elements.changeImage.addEventListener('click', () => {
@@ -275,6 +285,7 @@ elements.clearAll.addEventListener('click', () => {
   analysisController?.abort('user');
   stopScreenShare();
   clearImage();
+  resetAnalysisContext();
   elements.question.value = '';
   resetResponse();
   speechSynthesis.cancel();
