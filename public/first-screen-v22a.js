@@ -24,13 +24,11 @@ function simplifyCopy() {
   const hasIntent = document.body.classList.contains('v22a-has-intent');
   const routeTitle = document.getElementById('premium-route-title');
   const routeSubtitle = document.getElementById('premium-route-subtitle');
-  const analyze = document.getElementById('analyze');
 
   setText(routeTitle, hasImage ? 'Defina o objetivo' : 'O que você quer analisar?');
   setText(routeSubtitle, hasImage
     ? 'Escolha o que deseja descobrir. O especialista será sugerido automaticamente.'
     : 'Envie uma foto, imagem ou captura de tela.');
-  if (analyze && !analyze.disabled) setText(analyze, 'Analisar agora');
   document.body.classList.toggle('v22a-ready-to-analyze', hasImage && hasIntent);
 }
 
