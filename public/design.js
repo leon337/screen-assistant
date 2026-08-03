@@ -3,6 +3,7 @@ import './premium-v18.js';
 import { initializeAuthGate } from './auth-v20-ui.js';
 
 document.body.dataset.authState = 'loading';
+document.body.dataset.voiceControls = 'loading';
 
 for (const href of ['/auth-v20.css', '/auth-v21.css', '/design-v21.css', '/result-v22.css', '/first-screen-v22a.css', '/first-screen-v22a-desktop.css', '/voice-v23.css']) {
   const link = document.createElement('link');
@@ -16,6 +17,7 @@ await import('./design-v21.js');
 await import('./result-v22.js');
 await import('./first-screen-v22a.js');
 await import('./voice-v23.js');
+document.body.dataset.voiceControls = 'ready';
 
 const answer = document.getElementById('answer');
 
