@@ -1,7 +1,8 @@
-const CACHE = 'screen-assistant-v17';
+const CACHE = 'screen-assistant-v20-saas-auth';
 const APP_SHELL = [
-  '/', '/index.html', '/styles.css', '/status.css', '/app.js', '/design.js', '/status.js', '/analysis.js', '/response.js', '/pwa.js',
-  '/markdown.js', '/http.js', '/image.js', '/manifest.webmanifest',
+  '/', '/index.html', '/styles.css', '/status.css', '/premium-v18.css', '/intent-v19.css', '/auth-v20.css',
+  '/app.js', '/design.js', '/status.js', '/premium-v18.js', '/intent-v19.js', '/auth-v20.js', '/auth-v20-ui.js',
+  '/analysis.js', '/response.js', '/pwa.js', '/markdown.js', '/http.js', '/image.js', '/manifest.webmanifest',
   '/icons/icon-192.png', '/icons/icon-512.png'
 ];
 

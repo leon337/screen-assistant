@@ -1,4 +1,15 @@
 import './status.js';
+import './premium-v18.js';
+import { initializeAuthGate } from './auth-v20-ui.js';
+
+document.body.dataset.authState = 'loading';
+
+const authStyles = document.createElement('link');
+authStyles.rel = 'stylesheet';
+authStyles.href = '/auth-v20.css';
+document.head.append(authStyles);
+
+await initializeAuthGate();
 
 const answer = document.getElementById('answer');
 

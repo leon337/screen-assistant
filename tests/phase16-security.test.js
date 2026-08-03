@@ -1,31 +1,46 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { authorizeRequest, readBearer } from '../src/server/auth.js';
+import { authenticateRequest, readBearer } from '../src/server/auth.js';
 import { loadConfig, validateConfig } from '../src/server/config.js';
 import { clearRateLimitsForTests, consumeRateLimit } from '../src/server/rate-limit.js';
 import { validateAnalysisInput } from '../src/server/validation.js';
 
-test('autenticação rejeita ausência e token arbitrário', () => {
-  const expected = 'codigo-fechado-com-mais-de-16';
-  assert.equal(authorizeRequest(new Request('https://example.test'), expected), false);
-  assert.equal(authorizeRequest(new Request('https://example.test', {
-    headers: { authorization: 'Bearer qualquer-coisa' },
-  }), expected), false);
+const authConfig = loadConfig({
+  APP_RELEASE: 'phase-20-test',
+  SUPABASE_URL: 'https://example.supabase.co',
+  SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_12345678901234567890',
+  AI_MODE: 'gemini',
+  GEMINI_API_KEY: '1234567890',
 });
 
-test('autenticação aceita somente credencial exata', () => {
-  const expected = 'codigo-fechado-com-mais-de-16';
-  const request = new Request('https://example.test', {
-    headers: { authorization: `Bearer ${expected}` },
+test('autenticação rejeita ausência de sessão', async () => {
+  const result = await authenticateRequest(new Request('https://example.test'), authConfig, async () => {
+    throw new Error('fetch não deveria ser chamado');
   });
-  assert.equal(readBearer(request), expected);
-  assert.equal(authorizeRequest(request, expected), true);
+  assert.equal(result.error.status, 401);
+  assert.equal(result.error.code, 'AUTH_REQUIRED');
+});
+
+test('autenticação aceita somente usuário validado pelo Supabase', async () => {
+  const request = new Request('https://example.test', {
+    headers: { authorization: 'Bearer sessao-valida' },
+  });
+  assert.equal(readBearer(request), 'sessao-valida');
+
+  const result = await authenticateRequest(request, authConfig, async (url, options) => {
+    assert.equal(url, 'https://example.supabase.co/auth/v1/user');
+    assert.equal(options.headers.authorization, 'Bearer sessao-valida');
+    return new Response(JSON.stringify({ id: 'user-1', email: 'user@example.com' }), { status: 200 });
+  });
+  assert.equal(result.user.id, 'user-1');
 });
 
 test('configuração usa limites seguros e timeout configurável', () => {
   const config = loadConfig({
-    APP_RELEASE: 'phase-16-test', PREVIEW_ACCESS_TOKEN: '1234567890123456',
+    APP_RELEASE: 'phase-20-test',
+    SUPABASE_URL: 'https://example.supabase.co',
+    SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_12345678901234567890',
     AI_MODE: 'gemini', GEMINI_API_KEY: '1234567890', GEMINI_TIMEOUT_MS: '12000',
     MAX_QUESTION_CHARS: '500', RATE_LIMIT_MAX: '3', RATE_LIMIT_WINDOW_MS: '10000',
   });
@@ -38,10 +53,10 @@ test('configuração usa limites seguros e timeout configurável', () => {
 test('rate limit bloqueia após o máximo e reabre em nova janela', () => {
   clearRateLimitsForTests();
   const policy = { max: 2, windowMs: 1000 };
-  assert.equal(consumeRateLimit('ip', policy, 0).allowed, true);
-  assert.equal(consumeRateLimit('ip', policy, 10).allowed, true);
-  assert.equal(consumeRateLimit('ip', policy, 20).allowed, false);
-  assert.equal(consumeRateLimit('ip', policy, 1001).allowed, true);
+  assert.equal(consumeRateLimit('user:ip', policy, 0).allowed, true);
+  assert.equal(consumeRateLimit('user:ip', policy, 10).allowed, true);
+  assert.equal(consumeRateLimit('user:ip', policy, 20).allowed, false);
+  assert.equal(consumeRateLimit('user:ip', policy, 1001).allowed, true);
 });
 
 test('validação rejeita pergunta longa, MIME inválido e imagem grande', () => {
