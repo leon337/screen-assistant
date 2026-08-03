@@ -9,6 +9,7 @@ const analysis = read('public/analysis.js');
 const app = read('public/app.js');
 const screen = read('public/first-screen-v22a.js');
 const styles = read('public/first-screen-v22a.css');
+const desktopStyles = read('public/first-screen-v22a-desktop.css');
 const loader = read('public/design.js');
 const serviceWorker = read('public/service-worker.js');
 
@@ -88,6 +89,15 @@ test('barras e controles técnicos duplicados são removidos da criação mobile
   assert.match(styles, /\.design-v21-journey/);
 });
 
+test('desktop preserva compartilhamento e navegação', () => {
+  assert.match(desktopStyles, /min-width: 901px/);
+  assert.match(desktopStyles, /\.side-column/);
+  assert.match(desktopStyles, /display: block !important/);
+  assert.match(desktopStyles, /\.premium-tab-bar/);
+  assert.match(desktopStyles, /display: flex !important/);
+  assert.match(desktopStyles, /grid-template-columns/);
+});
+
 test('troca manual é acessível', () => {
   assert.match(intent, /<dialog id="expert-dialog"/);
   assert.match(intent, /aria-live="polite"/);
@@ -97,9 +107,11 @@ test('troca manual é acessível', () => {
 
 test('carregador e PWA publicam os assets da fase 22A', () => {
   assert.match(loader, /first-screen-v22a\.css/);
+  assert.match(loader, /first-screen-v22a-desktop\.css/);
   assert.match(loader, /first-screen-v22a\.js/);
   assert.match(serviceWorker, /screen-assistant-v22a-progressive-first-screen/);
   assert.match(serviceWorker, /intent-v22a\.js/);
   assert.match(serviceWorker, /first-screen-v22a\.css/);
+  assert.match(serviceWorker, /first-screen-v22a-desktop\.css/);
   assert.match(serviceWorker, /first-screen-v22a\.js/);
 });
