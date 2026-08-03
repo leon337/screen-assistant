@@ -1,79 +1,103 @@
 # Screen Assistant — Estado atual do projeto
 
 **Data:** 3 de agosto de 2026  
-**Branch:** `feat/phase-21-design-experience`  
-**PR:** #12  
-**Estado de governança:** Draft, sem merge e sem alteração de produção.
+**Base publicada:** `main`  
+**Branch de continuidade:** `feat/phase-22a-progressive-first-screen`
 
 ## Resumo executivo
 
-O Screen Assistant evoluiu de um piloto protegido por código para uma plataforma SaaS autenticada com Supabase.
+O Screen Assistant é uma plataforma SaaS autenticada com Supabase, análise de imagens por Gemini e perfis especializados, incluindo Leonardo Trader.
 
-O usuário já conseguiu:
-
-- abrir a tela de login;
-- criar ou acessar uma conta;
-- entrar na aplicação;
-- selecionar imagem;
-- escolher análise de gráfico;
-- usar o Leonardo Trader;
-- receber uma análise estruturada.
-
-A infraestrutura de autenticação, banco, RLS, sessão e análise está operacional no ambiente de preview.
-
-## Estado por área
-
-### Autenticação SaaS
+O ciclo anterior foi publicado na `main` por meio do PR #12:
 
 ```yaml
-supabase_project: screen-assistant-saas
-project_ref: qylqyhxpwffiripcpjej
-status: ACTIVE_HEALTHY
-login: operacional
-cadastro: implementado
-recuperacao_de_senha: implementada
-RLS: ativa
-merge: nao_realizado
+PR_12: MERGED
+merge_commit: 7b8e72556eb8f5fdc59412320dcaf11b1a01d1ec
 ```
 
-### Agentes
+A metodologia de continuidade foi publicada no MCF por meio do PR #27:
 
-Perfis disponíveis:
+```yaml
+PR_27: MERGED
+merge_commit: 64e19e8e0d17d3bcf7203afb95f5d9f9c14e3f8d
+```
 
+## Capacidades operacionais
+
+- cadastro, login, sessão e recuperação de senha;
+- projeto Supabase dedicado com RLS;
+- câmera, galeria e captura de tela;
 - Assistente geral;
-- Engenheiro de Software / diagnóstico técnico;
-- Arquiteto de Software;
-- especialista em UX e interface;
-- Leonardo Trader.
+- Diagnóstico técnico;
+- Arquitetura;
+- UX e Design;
+- Leonardo Trader;
+- respostas estruturadas, cópia, compartilhamento e voz;
+- PWA e preview Vercel.
 
-O Leonardo Trader possui contrato educacional próprio, cenários condicionais e gestão de risco. A análise não executa ordens e não promete resultados.
+## Incidente 1 — PR duplicado
 
-### Experiência de resultado
+Durante a documentação da Fase 22A, houve tentativa de criar outro PR para uma branch que já possuía o PR #12.
 
-A tela de resultado mobile recebeu correções para:
+```yaml
+erro: HTTP_422
+classe: RECUPERAVEL
+novo_PR_criado: false
+branch_alterada: false
+efeito_no_codigo: nenhum
+recuperacao: reutilizar_PR_12
+fluxo_interrompido: false
+```
 
-- remover cabeçalho e navegação que cobriam conteúdo;
-- reduzir cartões aninhados;
-- ocultar metadados técnicos;
-- compactar ações;
-- melhorar a largura útil da resposta.
+## Incidente 2 — encerramento indevido após o merge
 
-A experiência ainda depende de validação contínua no aparelho real.
+Depois que Léo autorizou o merge, o subfluxo `MERGE-CURRENT-CYCLE` foi concluído corretamente. Porém, o Mestre declarou o fluxo geral como `ENCERRADO` e informou `proxima_acao: nenhuma`.
 
-### Primeira tela
+Isso estava errado porque a missão-pai `SCREEN-PHASE-22A-FIRST-SCREEN` continuava com implementação pendente.
 
-A primeira tela atual ainda apresenta excesso de elementos:
+```yaml
+subfluxo_merge:
+  resultado: concluido
+missao_pai:
+  resultado_correto: EM_EXECUCAO
+erro_do_checkpoint:
+  estado_incorreto: ENCERRADO
+  proxima_acao_incorreta: nenhuma
+efeito_no_codigo: nenhum
+efeito_no_fluxo: pausa_indevida
+recuperacao:
+  - reabrir_missao_pai
+  - criar_branch_nova_a_partir_da_main
+  - retomar_implementacao
+```
 
-- ações repetidas de Foto e Galeria;
-- barra inferior redundante;
-- cabeçalho com muitas ações;
-- objetivos em cartões grandes;
-- escolha de especialista excessivamente exposta;
-- onboarding do Leonardo Trader dentro do formulário.
+A correção metodológica adiciona ao CAF:
 
-## Fase 22A — decisão atual
+```yaml
+parent_mission_id: identificador_da_missao_pai
+return_to: agente_ou_checkpoint_de_retorno
+return_status: NOT_APPLICABLE_PENDENTE_OU_COMPLETED
+```
 
-Foi aprovada documentalmente uma nova jornada:
+## Fase 22A — Primeira tela progressiva
+
+### Wireframe
+
+```yaml
+wireframe: APROVADO
+RC_002: PASS_WITH_IMPLEMENTATION_GATES
+```
+
+### Implementação atual
+
+```yaml
+branch: feat/phase-22a-progressive-first-screen
+estado: IMPLEMENTADA_AGUARDANDO_CI
+merge: NAO_AUTORIZADO
+producao: INTACTA
+```
+
+Fluxo:
 
 ```text
 Enviar imagem
@@ -82,130 +106,64 @@ Enviar imagem
 → analisar
 ```
 
-A escolha manual do agente deixa de ser etapa obrigatória.
+Principais alterações:
 
-O sistema mostrará o especialista como consequência da intenção:
-
-```text
-Especialista sugerido: Leonardo Trader
-[Trocar]
-```
-
-### Estado do wireframe
-
-```yaml
-wireframe: APROVADO
-RC: PASS_WITH_IMPLEMENTATION_GATES
-implementacao_da_nova_tela: NAO_INICIADA
-preview_da_nova_tela: NAO_DISPONIVEL
-merge: NAO_AUTORIZADO
-```
+- contexto inicia neutro;
+- objetivo e agente não aparecem antes da imagem;
+- três objetivos principais e `Mais opções`;
+- especialista sugerido como consequência da intenção;
+- troca manual opcional e compatível;
+- `Nova análise` limpa imagem, intenção, agente, tarefa, pergunta e resultado;
+- `Repetir análise` preserva o contexto;
+- análise bloqueada sem imagem e intenção;
+- barras duplicadas e ações técnicas ocultadas na criação mobile;
+- cache PWA atualizado.
 
 Artefatos:
 
-- `docs/wireframes/PHASE-22A-FIRST-SCREEN-WIREFRAME.md`;
-- `docs/reviews/PHASE-22A-FIRST-SCREEN-WIREFRAME-RC-002.md`.
+- `docs/phases/PHASE-22A-PROGRESSIVE-FIRST-SCREEN.md`;
+- `public/intent-v22a.js`;
+- `public/first-screen-v22a.js`;
+- `public/first-screen-v22a.css`;
+- `tests/phase22a-progressive-first-screen.test.js`.
 
-## Incidente de continuidade — HTTP 422
+## Próximas ações
 
-Durante o fluxo da Fase 22A, houve uma tentativa incorreta de criar um novo pull request para a branch `feat/phase-21-design-experience`.
+1. abrir PR Draft da Fase 22A;
+2. executar CI;
+3. corrigir qualquer regressão sem interromper o fluxo;
+4. publicar preview mobile ligado ao HEAD aprovado;
+5. testar foto, galeria, intenção, troca de agente e reset;
+6. executar RC-003;
+7. solicitar autorização antes de novo merge.
 
-O GitHub rejeitou a ação porque o PR #12 já existia.
-
-```yaml
-erro: HTTP_422
-causa: pull_request_ja_existente_para_a_branch
-novo_PR_criado: false
-branch_alterada: false
-merge_realizado: false
-efeito_no_codigo: nenhum
-recuperacao: reutilizar_PR_12
-resultado: fluxo_continuou
-```
-
-O incidente não alterou código, branch, produção ou governança. A recuperação correta foi manter o PR #12 e publicar os novos artefatos nele.
-
-## Mecanismo criado após o incidente
-
-Foi criado no repositório MCF o **Protocolo CAF — Continuidade Automática de Fluxo**.
-
-O protocolo determina:
-
-```text
-CAPTURAR
-→ CLASSIFICAR
-→ VERIFICAR EFEITO
-→ ESCOLHER RECUPERAÇÃO
-→ EXECUTAR
-→ VALIDAR
-→ CONTINUAR
-```
-
-Ele inclui:
-
-- classes de falha;
-- checkpoint obrigatório do bastão;
-- agente substituto;
-- limite de tentativas;
-- proibição de destinatário `ENCERRADO`;
-- proibição de encerrar com ação pendente;
-- schema JSON validável.
-
-Referência:
-
-- MCF PR #27 — `MCF-DEC-016 — fluxo resiliente e continuidade automática`.
-
-## Testes e CI antes desta atualização documental
-
-```yaml
-workflow: 30780050991
-job: 91582767846
-testes: 91
-aprovados: 91
-falhas: 0
-segredos: PASS
-```
-
-## Próxima etapa técnica
-
-Implementar o wireframe da Fase 22A na branch atual, com:
-
-1. estado inicial contendo somente Foto e Galeria;
-2. objetivos revelados após selecionar imagem;
-3. especialista sugerido automaticamente;
-4. troca manual opcional;
-5. reset completo em Nova análise;
-6. preservação explícita em Repetir análise;
-7. testes de compatibilidade entre intenção, perfil e tarefa;
-8. preview mobile;
-9. RC-003 antes de qualquer merge.
-
-## Checkpoint CAF do projeto
+## Checkpoint CAF hierárquico
 
 ```yaml
 objetivo: SCREEN-PHASE-22A-FIRST-SCREEN
+parent_mission_id: null
+return_to: null
+return_status: NOT_APPLICABLE
 estado: EM_EXECUCAO
-ultimo_sucesso: wireframe_e_RC_002_versionados
+ultimo_sucesso: implementacao_progressiva_versionada
 falha_atual: nenhuma
 classe_da_falha: NENHUMA
-efeito_confirmado: incidente_422_sem_efeito_residual
-recuperacao_escolhida: nenhuma
-proxima_acao: implementar_wireframe_na_branch
-destinatario: Rafael
+efeito_confirmado: missao_pai_reaberta_apos_subfluxo_de_merge
+recuperacao_escolhida: retomar_em_branch_derivada_da_main
+proxima_acao: abrir_PR_e_executar_CI
+destinatario: Gabriel
 artefatos:
   - tipo: arquivo
-    referencia: docs/wireframes/PHASE-22A-FIRST-SCREEN-WIREFRAME.md
-  - tipo: parecer
-    referencia: docs/reviews/PHASE-22A-FIRST-SCREEN-WIREFRAME-RC-002.md
-  - tipo: pull_request
-    referencia: https://github.com/leon337/screen-assistant/pull/12
+    referencia: docs/phases/PHASE-22A-PROGRESSIVE-FIRST-SCREEN.md
+  - tipo: branch
+    referencia: feat/phase-22a-progressive-first-screen
 ```
 
 ## Governança
 
 ```yaml
-PR_12: aberto_Draft
-merge: NAO_AUTORIZADO
-producao: INTACTA
-implementacao_Fase_22A: proxima_acao
+main: atualizada_pelo_PR_12
+branch_Fase_22A: aberta
+novo_merge: NAO_AUTORIZADO
+deploy_producao: NAO_AUTORIZADO
 ```
