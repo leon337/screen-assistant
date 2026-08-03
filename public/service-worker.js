@@ -1,5 +1,5 @@
 const PREVIOUS_CACHE_LINEAGE = 'screen-assistant-v20-saas-auth';
-const CACHE = 'screen-assistant-v21-design-experience';
+const CACHE = 'screen-assistant-v21-design-experience-hotfix-1';
 const APP_SHELL = [
   '/', '/index.html', '/styles.css', '/status.css', '/premium-v18.css', '/intent-v19.css',
   '/auth-v20.css', '/auth-v21.css', '/design-v21.css',
