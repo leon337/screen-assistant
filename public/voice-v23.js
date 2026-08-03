@@ -6,6 +6,7 @@ const SpeechRecognitionApi = hasWindow
   : null;
 
 const SETTINGS_KEY = 'screen-assistant-voice-v23';
+const TARGET_LANGUAGE = 'pt-BR';
 const RATE_MIN = 0.6;
 const RATE_MAX = 1.6;
 const RATE_STEP = 0.1;
@@ -63,6 +64,18 @@ function clampRate(value) {
   return Math.min(RATE_MAX, Math.max(RATE_MIN, rounded || 1));
 }
 
+function normalizeLanguageTag(value) {
+  return String(value || '')
+    .replace(/_/g, '-')
+    .trim()
+    .toLowerCase();
+}
+
+function isBrazilianPortugueseVoice(voice) {
+  const language = normalizeLanguageTag(voice?.lang);
+  return language === 'pt-br' || language.startsWith('pt-br-');
+}
+
 function normalizeSpeech(value) {
   return String(value || '')
     .normalize('NFD')
@@ -98,43 +111,38 @@ function updateSummary() {
     : 'Ativar comandos de voz';
 }
 
-function dispatchAppStatus(message, tone = 'neutral') {
-  const status = document.getElementById('status');
-  if (!status) return;
-  status.textContent = message;
-  status.dataset.tone = tone;
-}
-
-function getPortugueseVoices() {
+function getBrazilianPortugueseVoices() {
   if (!hasWindow || !window.speechSynthesis) return [];
-  const voices = window.speechSynthesis.getVoices();
-  const portuguese = voices.filter((voice) => /^pt(?:-|$)/i.test(voice.lang));
-  return portuguese.length ? portuguese : voices;
+  return window.speechSynthesis
+    .getVoices()
+    .filter(isBrazilianPortugueseVoice)
+    .sort((left, right) => left.name.localeCompare(right.name, TARGET_LANGUAGE));
 }
 
 function chooseDefaultVoice(voices) {
   return voices.find((voice) => voice.voiceURI === state.voiceURI)
-    || voices.find((voice) => /^pt-BR$/i.test(voice.lang) && voice.localService)
-    || voices.find((voice) => /^pt-BR$/i.test(voice.lang))
-    || voices.find((voice) => /^pt(?:-|$)/i.test(voice.lang))
+    || voices.find((voice) => voice.localService)
     || voices[0]
     || null;
 }
 
 function populateVoices() {
   if (!ui.voice) return;
-  const voices = getPortugueseVoices();
-  const next = chooseDefaultVoice(voices);
-  const current = ui.voice.value;
+
+  const voices = getBrazilianPortugueseVoices();
+  const previousVoiceURI = ui.voice.value || state.voiceURI;
   ui.voice.replaceChildren();
 
   if (!voices.length) {
     const option = document.createElement('option');
     option.value = '';
-    option.textContent = 'Voz padrão do aparelho';
+    option.textContent = 'Português (Brasil) — voz padrão do sistema';
     ui.voice.append(option);
     ui.voice.disabled = true;
     selectedVoice = null;
+    state.voiceURI = '';
+    saveSettings();
+    setCommandStatus('Nenhuma voz pt-BR foi listada pelo aparelho. A leitura solicitará a voz padrão em português do Brasil.');
     return;
   }
 
@@ -142,11 +150,13 @@ function populateVoices() {
   for (const voice of voices) {
     const option = document.createElement('option');
     option.value = voice.voiceURI;
-    option.textContent = `${voice.name} · ${voice.lang}${voice.localService ? ' · aparelho' : ''}`;
+    option.textContent = `Português (Brasil) · ${voice.name}${voice.localService ? ' · aparelho' : ''}`;
     ui.voice.append(option);
   }
 
-  selectedVoice = voices.find((voice) => voice.voiceURI === current) || next;
+  selectedVoice = voices.find((voice) => voice.voiceURI === previousVoiceURI)
+    || chooseDefaultVoice(voices);
+
   if (selectedVoice) {
     ui.voice.value = selectedVoice.voiceURI;
     state.voiceURI = selectedVoice.voiceURI;
@@ -171,21 +181,24 @@ function stopRecognition({ preserveArmed = true } = {}) {
   clearTimeout(restartTimer);
   restartTimer = null;
   if (!preserveArmed) commandsArmed = false;
+
   if (!recognition) {
     recognitionActive = false;
     updateSummary();
     return;
   }
+
   try {
     recognition.abort();
   } catch {
-    // O navegador pode já ter encerrado a sessão.
+    // A sessão pode já ter sido encerrada pelo navegador.
   }
+
   recognitionActive = false;
   updateSummary();
 }
 
-function scheduleRecognitionRestart(delay = 500) {
+function scheduleRecognitionRestart(delay = 650) {
   clearTimeout(restartTimer);
   if (!commandsArmed || document.visibilityState !== 'visible' || window.speechSynthesis?.speaking) return;
   restartTimer = setTimeout(() => startRecognition(), delay);
@@ -197,7 +210,7 @@ function stopSpeech({ resumeCommands = true } = {}) {
   const stopButton = document.getElementById('stop-voice');
   if (stopButton) stopButton.disabled = true;
   setCommandStatus('Leitura interrompida.');
-  if (resumeCommands && commandsArmed) scheduleRecognitionRestart(350);
+  if (resumeCommands && commandsArmed) scheduleRecognitionRestart(450);
 }
 
 function speakText(text, { preview = false } = {}) {
@@ -206,6 +219,7 @@ function speakText(text, { preview = false } = {}) {
     setCommandStatus('Ainda não existe uma resposta disponível para leitura.', 'error');
     return false;
   }
+
   if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') {
     setCommandStatus('A leitura por voz não está disponível neste navegador.', 'error');
     return false;
@@ -219,27 +233,31 @@ function speakText(text, { preview = false } = {}) {
   window.speechSynthesis.cancel();
 
   const utterance = new SpeechSynthesisUtterance(cleanText);
-  utterance.lang = selectedVoice?.lang || 'pt-BR';
+  utterance.lang = TARGET_LANGUAGE;
   utterance.rate = state.rate;
-  if (selectedVoice) utterance.voice = selectedVoice;
+  if (selectedVoice && isBrazilianPortugueseVoice(selectedVoice)) utterance.voice = selectedVoice;
 
   const stopButton = document.getElementById('stop-voice');
   if (stopButton) stopButton.disabled = false;
-  setCommandStatus(preview ? 'Reproduzindo teste da voz.' : `Lendo resposta em ${state.rate.toFixed(1)}x.`, 'success');
+  setCommandStatus(preview
+    ? 'Reproduzindo teste em português do Brasil.'
+    : `Lendo resposta em português do Brasil, velocidade ${state.rate.toFixed(1)}x.`, 'success');
 
   const finish = () => {
     if (version !== utteranceVersion) return;
     if (stopButton) stopButton.disabled = true;
     setCommandStatus('Leitura concluída.');
-    if (shouldResume && commandsArmed) scheduleRecognitionRestart(450);
+    if (shouldResume && commandsArmed) scheduleRecognitionRestart(550);
   };
+
   utterance.onend = finish;
   utterance.onerror = () => {
     if (version !== utteranceVersion) return;
     if (stopButton) stopButton.disabled = true;
-    setCommandStatus('Não foi possível concluir a leitura por voz.', 'error');
-    if (shouldResume && commandsArmed) scheduleRecognitionRestart(450);
+    setCommandStatus('Não foi possível concluir a leitura em português do Brasil.', 'error');
+    if (shouldResume && commandsArmed) scheduleRecognitionRestart(550);
   };
+
   window.speechSynthesis.speak(utterance);
   return true;
 }
@@ -274,18 +292,33 @@ function executeCommand(rawCommand) {
   if (!command) {
     setCommandStatus('Pode falar o comando agora. A janela ficará aberta por oito segundos.', 'success');
     wakeUntil = Date.now() + WAKE_WINDOW_MS;
-    return;
+    return true;
   }
 
   if (/^(desativar|desligar) (os )?comandos/.test(command) || command === 'desativar voz') {
     disarmCommands('Comandos de voz desativados.');
-    return;
+    return true;
   }
-  if (command.includes('ajuda') || command.includes('quais comandos')) return commandHelp();
-  if (command.includes('velocidade normal') || command.includes('voz normal')) return setRate(1);
-  if (command.includes('mais rapido') || command.includes('aumentar velocidade') || command.includes('acelerar voz')) return setRate(state.rate + RATE_STEP);
-  if (command.includes('mais devagar') || command.includes('diminuir velocidade') || command.includes('reduzir velocidade')) return setRate(state.rate - RATE_STEP);
-  if (command.includes('parar') || command.includes('interromper voz')) return stopSpeech();
+  if (command.includes('ajuda') || command.includes('quais comandos')) {
+    commandHelp();
+    return true;
+  }
+  if (command.includes('velocidade normal') || command.includes('voz normal')) {
+    setRate(1);
+    return true;
+  }
+  if (command.includes('mais rapido') || command.includes('aumentar velocidade') || command.includes('acelerar voz')) {
+    setRate(state.rate + RATE_STEP);
+    return true;
+  }
+  if (command.includes('mais devagar') || command.includes('diminuir velocidade') || command.includes('reduzir velocidade')) {
+    setRate(state.rate - RATE_STEP);
+    return true;
+  }
+  if (command.includes('parar') || command.includes('interromper voz')) {
+    stopSpeech();
+    return true;
+  }
   if (command.includes('ler resposta') || command.includes('ouvir resposta') || command === 'ler') {
     return speakText(answerText());
   }
@@ -299,24 +332,47 @@ function executeCommand(rawCommand) {
     return clickAction(['analyze', 'bar-analyze'], 'Análise iniciada.', 'Selecione uma imagem e um objetivo antes de analisar.');
   }
   if (command.includes('ir para resultado') || command === 'resultado') {
-    return clickAction([], '', '') || document.querySelector('[data-premium-route="result"]')?.click();
+    const route = document.querySelector('[data-premium-route="result"]');
+    if (route) {
+      route.click();
+      setCommandStatus('Abrindo resultado.', 'success');
+      return true;
+    }
   }
 
-  setCommandStatus(`Comando não reconhecido: “${rawCommand.trim()}”. Diga “Screen Assistant, ajuda”.`, 'error');
+  setCommandStatus(`Comando não reconhecido: “${rawCommand.trim()}”. Diga “Screen Assistente, ajuda”.`, 'error');
+  return false;
 }
 
 function splitWakePhrase(transcript) {
   const normalized = normalizeSpeech(transcript);
   const wakePatterns = [
-    /^(?:ei )?screen assistant\b/,
-    /^(?:ei )?screen assistente\b/,
-    /^(?:ei )?escreen assistant\b/,
+    /\b(?:ei\s+)?screen assistant\b/,
+    /\b(?:ei\s+)?screen assistente\b/,
+    /\b(?:ei\s+)?screen assistent\b/,
+    /\b(?:ei\s+)?escreen assistant\b/,
+    /\b(?:ei\s+)?scrim assistente\b/,
+    /\b(?:ei\s+)?escrim assistente\b/,
   ];
+
   for (const pattern of wakePatterns) {
     const match = normalized.match(pattern);
-    if (match) return normalized.slice(match[0].length).trim();
+    if (match) return normalized.slice((match.index || 0) + match[0].length).trim();
   }
+
   return null;
+}
+
+function chooseTranscript(result) {
+  const alternatives = [];
+  for (let index = 0; index < result.length; index += 1) {
+    const transcript = result[index]?.transcript?.trim();
+    if (transcript) alternatives.push(transcript);
+  }
+
+  return alternatives.find((transcript) => splitWakePhrase(transcript) !== null)
+    || alternatives[0]
+    || '';
 }
 
 function handleTranscript(transcript) {
@@ -325,52 +381,66 @@ function handleTranscript(transcript) {
     executeCommand(afterWake);
     return;
   }
+
   if (Date.now() <= wakeUntil) {
     executeCommand(transcript);
     return;
   }
-  setCommandStatus(`Ouvi “${transcript.trim()}”. Comece com “Screen Assistant”.`);
+
+  setCommandStatus(`Ouvi “${transcript.trim()}”. Comece com “Screen Assistente”.`);
 }
 
 function createRecognition() {
   if (!SpeechRecognitionApi) return null;
+
   const instance = new SpeechRecognitionApi();
-  instance.lang = 'pt-BR';
-  instance.continuous = true;
+  instance.lang = TARGET_LANGUAGE;
+  instance.continuous = false;
   instance.interimResults = false;
-  instance.maxAlternatives = 1;
+  instance.maxAlternatives = 5;
 
   instance.onstart = () => {
     recognitionActive = true;
-    setCommandStatus('Escutando. Diga “Screen Assistant” antes do comando.', 'success');
+    setCommandStatus('Escutando em português do Brasil. Diga “Screen Assistente” antes do comando.', 'success');
     updateSummary();
   };
+
   instance.onresult = (event) => {
     for (let index = event.resultIndex; index < event.results.length; index += 1) {
       const result = event.results[index];
       if (!result.isFinal) continue;
-      const transcript = result[0]?.transcript || '';
-      if (transcript.trim()) handleTranscript(transcript);
+      const transcript = chooseTranscript(result);
+      if (transcript) handleTranscript(transcript);
     }
   };
+
   instance.onerror = (event) => {
     recognitionActive = false;
     const permanent = ['not-allowed', 'service-not-allowed', 'audio-capture'].includes(event.error);
+
     if (permanent) {
       commandsArmed = false;
       setCommandStatus('O microfone não pôde ser ativado. Verifique a permissão do navegador.', 'error');
       updateSummary();
       return;
     }
-    if (event.error !== 'aborted' && event.error !== 'no-speech') {
+
+    if (event.error === 'no-speech') {
+      setCommandStatus('Nenhuma fala foi detectada. Continuarei escutando.', 'neutral');
+      return;
+    }
+
+    if (event.error !== 'aborted') {
       setCommandStatus(`Reconhecimento interrompido: ${event.error}.`, 'error');
     }
   };
+
   instance.onend = () => {
     recognitionActive = false;
     updateSummary();
     if (commandsArmed && !window.speechSynthesis?.speaking) scheduleRecognitionRestart();
   };
+
   return instance;
 }
 
@@ -381,9 +451,12 @@ function startRecognition() {
     updateSummary();
     return false;
   }
+
   if (document.visibilityState !== 'visible') return false;
   if (recognitionActive || window.speechSynthesis?.speaking) return true;
+
   recognition ||= createRecognition();
+
   try {
     recognition.start();
     return true;
@@ -402,6 +475,7 @@ function armCommands() {
     setCommandStatus('Este navegador permite ouvir respostas, mas não oferece comandos de voz.', 'error');
     return;
   }
+
   commandsArmed = true;
   updateSummary();
   startRecognition();
@@ -459,31 +533,32 @@ function buildInterface() {
         <small id="voice-rate-help-v23">Mais lenta à esquerda; mais rápida à direita.</small>
       </div>
       <div class="voice-control-v23">
-        <label for="voice-select-v23">Voz do aparelho</label>
+        <label for="voice-select-v23">Voz em português (Brasil)</label>
         <select id="voice-select-v23"></select>
+        <small>Somente vozes pt-BR são exibidas nesta fase.</small>
         <button id="voice-preview-v23" class="secondary" type="button">Testar voz</button>
       </div>
       <div class="voice-command-card-v23">
         <div>
           <strong>Comandos de voz</strong>
-          <span>Ative uma vez e depois diga “Screen Assistant, ler resposta”.</span>
+          <span>Ative uma vez e depois diga “Screen Assistente, ler resposta”.</span>
         </div>
         <button id="voice-command-panel-toggle-v23" class="secondary" type="button" aria-pressed="false">Ativar comandos de voz</button>
         <p id="voice-command-status-v23" class="voice-command-status-v23" aria-live="polite">Microfone desligado.</p>
         <details class="voice-command-help-v23">
           <summary>Ver comandos disponíveis</summary>
           <ul>
-            <li>Screen Assistant, ler resposta</li>
-            <li>Screen Assistant, parar voz</li>
-            <li>Screen Assistant, mais rápido</li>
-            <li>Screen Assistant, mais devagar</li>
-            <li>Screen Assistant, velocidade normal</li>
-            <li>Screen Assistant, analisar</li>
-            <li>Screen Assistant, nova análise</li>
-            <li>Screen Assistant, repetir análise</li>
+            <li>Screen Assistente, ler resposta</li>
+            <li>Screen Assistente, parar voz</li>
+            <li>Screen Assistente, mais rápido</li>
+            <li>Screen Assistente, mais devagar</li>
+            <li>Screen Assistente, velocidade normal</li>
+            <li>Screen Assistente, analisar</li>
+            <li>Screen Assistente, nova análise</li>
+            <li>Screen Assistente, repetir análise</li>
           </ul>
         </details>
-        <small>O microfone só funciona enquanto esta página está visível. A disponibilidade depende do navegador.</small>
+        <small>O microfone funciona enquanto esta página está visível. O reconhecimento está configurado para português do Brasil.</small>
       </div>
     </div>`;
 
@@ -499,13 +574,13 @@ function buildInterface() {
   ui.rate.addEventListener('input', () => setRate(ui.rate.value, { announce: false }));
   ui.rate.addEventListener('change', () => setRate(ui.rate.value));
   ui.voice.addEventListener('change', () => {
-    const voices = getPortugueseVoices();
+    const voices = getBrazilianPortugueseVoices();
     selectedVoice = voices.find((voice) => voice.voiceURI === ui.voice.value) || null;
     state.voiceURI = selectedVoice?.voiceURI || '';
     saveSettings();
-    setCommandStatus(`Voz selecionada: ${selectedVoice?.name || 'padrão do aparelho'}.`, 'success');
+    setCommandStatus(`Voz pt-BR selecionada: ${selectedVoice?.name || 'padrão do sistema'}.`, 'success');
   });
-  ui.preview.addEventListener('click', () => speakText('Olá. Esta é uma demonstração da voz do Screen Assistant.', { preview: true }));
+  ui.preview.addEventListener('click', () => speakText('Olá. Esta é uma demonstração da voz em português do Brasil.', { preview: true }));
   ui.commandToggle.addEventListener('click', toggleCommands);
 
   syncTogglePlacement();
@@ -518,11 +593,13 @@ function interceptLegacyVoiceButtons() {
   document.addEventListener('click', (event) => {
     const target = event.target instanceof Element ? event.target.closest('button') : null;
     if (!target) return;
+
     if (target.id === 'speak-answer') {
       event.preventDefault();
       event.stopImmediatePropagation();
       speakText(answerText());
     }
+
     if (target.id === 'stop-voice') {
       event.preventDefault();
       event.stopImmediatePropagation();
@@ -534,13 +611,17 @@ function interceptLegacyVoiceButtons() {
 function initialize() {
   if (!hasDom || !hasWindow) return;
   if (!buildInterface()) return;
-  interceptLegacyVoiceButtons();
 
+  interceptLegacyVoiceButtons();
   window.speechSynthesis?.addEventListener?.('voiceschanged', populateVoices);
   window.matchMedia('(max-width: 900px), (pointer: coarse)').addEventListener('change', syncTogglePlacement);
+
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') disarmCommands('Comandos desligados porque a página saiu de primeiro plano.');
+    if (document.visibilityState === 'hidden') {
+      disarmCommands('Comandos desligados porque a página saiu de primeiro plano.');
+    }
   });
+
   window.addEventListener('beforeunload', () => {
     commandsArmed = false;
     stopRecognition({ preserveArmed: false });
@@ -555,7 +636,7 @@ function initialize() {
   } else if (!SpeechRecognitionApi) {
     ui.commandToggle.disabled = true;
     ui.topToggle.disabled = true;
-    setCommandStatus('Leitura disponível. Comandos falados não são suportados neste navegador.');
+    setCommandStatus('Leitura pt-BR disponível. Comandos falados não são suportados neste navegador.');
   }
 }
 
