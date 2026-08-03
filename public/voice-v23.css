@@ -1,0 +1,211 @@
+.voice-command-toggle-v23 {
+  white-space: nowrap;
+}
+
+.voice-command-toggle-v23.is-listening {
+  border-color: rgba(92, 230, 175, 0.7) !important;
+  background: rgba(28, 112, 87, 0.28) !important;
+  box-shadow: 0 0 0 3px rgba(92, 230, 175, 0.12);
+}
+
+.voice-settings-v23 {
+  margin-top: 1rem;
+  border: 1px solid rgba(133, 145, 204, 0.24);
+  border-radius: 1.25rem;
+  background: rgba(13, 20, 43, 0.76);
+  overflow: clip;
+}
+
+.voice-settings-v23 > summary {
+  min-height: 3.5rem;
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  cursor: pointer;
+  font-weight: 800;
+  list-style: none;
+}
+
+.voice-settings-v23 > summary::-webkit-details-marker {
+  display: none;
+}
+
+.voice-settings-v23 > summary::before {
+  content: '▶';
+  font-size: 0.78rem;
+  color: #b7baff;
+  transition: transform 160ms ease;
+}
+
+.voice-settings-v23[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.voice-settings-v23 > summary > span {
+  margin-right: auto;
+}
+
+.voice-settings-v23 > summary small {
+  color: #aeb7d4;
+  font-weight: 600;
+}
+
+.voice-settings-body-v23 {
+  padding: 0 1rem 1rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.voice-control-v23,
+.voice-command-card-v23 {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid rgba(133, 145, 204, 0.2);
+  border-radius: 1rem;
+  background: rgba(8, 14, 31, 0.68);
+}
+
+.voice-command-card-v23 {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.voice-command-card-v23 > div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.voice-command-card-v23 strong,
+.voice-control-v23 label {
+  color: #f6f7ff;
+  font-weight: 800;
+}
+
+.voice-command-card-v23 span,
+.voice-control-v23 small,
+.voice-command-card-v23 > small {
+  color: #aeb7d4;
+  line-height: 1.45;
+}
+
+.voice-control-heading-v23 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.voice-control-heading-v23 output {
+  min-width: 3.5rem;
+  text-align: center;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(119, 105, 255, 0.2);
+  color: #e7e5ff;
+  font-weight: 800;
+}
+
+#voice-rate-v23 {
+  width: 100%;
+  min-height: 2.75rem;
+  margin: 0.35rem 0 0.15rem;
+  accent-color: #8a79ff;
+}
+
+#voice-select-v23 {
+  width: 100%;
+  min-height: 3rem;
+  margin: 0.65rem 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(133, 145, 204, 0.3);
+  border-radius: 0.8rem;
+  background: #111a38;
+  color: #f6f7ff;
+  font: inherit;
+}
+
+#voice-preview-v23,
+#voice-command-panel-toggle-v23 {
+  min-height: 3rem;
+}
+
+#voice-command-panel-toggle-v23[aria-pressed='true'] {
+  border-color: rgba(92, 230, 175, 0.7);
+  background: rgba(28, 112, 87, 0.26);
+  color: #d9fff0;
+}
+
+.voice-command-status-v23 {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.8rem;
+  background: rgba(114, 126, 184, 0.12);
+  color: #d8def7;
+  line-height: 1.45;
+}
+
+.voice-command-status-v23[data-tone='success'] {
+  background: rgba(28, 112, 87, 0.22);
+  color: #caffea;
+}
+
+.voice-command-status-v23[data-tone='error'] {
+  background: rgba(152, 61, 96, 0.2);
+  color: #ffd8e7;
+}
+
+.voice-command-help-v23 {
+  border-top: 1px solid rgba(133, 145, 204, 0.18);
+  padding-top: 0.75rem;
+}
+
+.voice-command-help-v23 summary {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: #cfd4f2;
+  font-weight: 700;
+}
+
+.voice-command-help-v23 ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.35rem;
+  color: #b8c0df;
+  line-height: 1.65;
+}
+
+@media (max-width: 900px), (pointer: coarse) {
+  .voice-settings-body-v23 {
+    grid-template-columns: 1fr;
+  }
+
+  .voice-command-card-v23 {
+    grid-column: auto;
+  }
+
+  .voice-settings-v23 > summary {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .voice-settings-v23 > summary small {
+    width: 100%;
+    padding-left: 1.15rem;
+  }
+
+  .voice-command-toggle-v23 {
+    min-height: 3rem;
+    padding-inline: 0.85rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voice-settings-v23 > summary::before {
+    transition: none;
+  }
+}
