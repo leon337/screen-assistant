@@ -1,0 +1,363 @@
+body.first-screen-v22a[data-premium-screen="analyze"] .design-v21-journey,
+body.first-screen-v22a[data-premium-screen="analyze"] .workspace-heading,
+body.first-screen-v22a[data-premium-screen="analyze"] .side-column,
+body.first-screen-v22a[data-premium-screen="analyze"] #mobile-action-bar,
+body.first-screen-v22a[data-premium-screen="analyze"] .premium-tab-bar,
+body.first-screen-v22a[data-premium-screen="analyze"] .install-hint,
+body.first-screen-v22a[data-premium-screen="analyze"] .app-footer {
+  display: none !important;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .shell {
+  width: min(680px, calc(100% - 28px));
+  padding-bottom: 40px;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .premium-screen-heading {
+  margin: 22px 0 18px;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .premium-screen-heading h2 {
+  font-size: clamp(1.7rem, 7vw, 2.3rem);
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .privacy-banner {
+  align-items: flex-start;
+  margin-bottom: 14px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .privacy-banner strong {
+  display: none;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .privacy-banner span {
+  color: var(--v21-muted);
+  font-size: .8rem;
+  line-height: 1.45;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .privacy-icon {
+  width: 24px;
+  height: 24px;
+  flex-basis: 24px;
+  font-size: .75rem;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .grid {
+  display: block;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .input-panel {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .panel-heading {
+  display: none;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .source-picker {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .source-card {
+  display: flex;
+  min-height: 68px;
+  width: 100%;
+  padding: 14px 16px;
+  text-align: left;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .source-card span:last-child {
+  display: grid;
+  gap: 2px;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .source-card small {
+  color: var(--v21-muted);
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"]:not(.v22a-has-image) .preview-shell,
+body.first-screen-v22a[data-premium-screen="analyze"]:not(.v22a-has-image) .preview-meta,
+body.first-screen-v22a[data-premium-screen="analyze"]:not(.v22a-has-image) #v22a-change-image,
+body.first-screen-v22a[data-premium-screen="analyze"]:not(.v22a-has-image) #intent-v19,
+body.first-screen-v22a[data-premium-screen="analyze"]:not(.v22a-has-image) .field-group,
+body.first-screen-v22a[data-premium-screen="analyze"]:not(.v22a-has-image) .primary-actions {
+  display: none !important;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"].v22a-has-image .source-picker {
+  display: none;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"].v22a-has-image .preview-shell {
+  display: grid;
+  min-height: 0;
+  max-height: 220px;
+  margin: 0;
+  border-style: solid;
+  background: rgba(8, 13, 27, .72);
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"].v22a-has-image .preview-empty {
+  display: none;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"].v22a-has-image #image-preview {
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .preview-meta {
+  margin: 8px 0 0;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .preview-meta #image-meta {
+  display: none;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .preview-meta #source-meta {
+  margin: 0;
+  color: var(--v21-muted);
+  font-size: .78rem;
+}
+
+.v22a-change-image {
+  min-height: 44px;
+  margin: 4px 0 8px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: #cfc9ff;
+  font-weight: 800;
+  text-align: left;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] #intent-v19 {
+  margin-top: 18px;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .intent-heading {
+  margin-bottom: 10px;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .intent-heading h2 {
+  font-size: 1.2rem;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .intent-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .intent-card {
+  min-height: 66px;
+  padding: 11px 13px;
+  border-radius: 14px;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .intent-more-toggle {
+  min-height: 48px;
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #cfc9ff;
+  font-weight: 800;
+  text-align: left;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .intent-more-toggle::after {
+  content: ' ↓';
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .intent-more-toggle[aria-expanded="true"]::after {
+  content: ' ↑';
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .intent-more-options {
+  margin-top: 2px;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .expert-suggestion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(133, 111, 255, .24);
+  border-radius: 14px;
+  background: rgba(133, 111, 255, .08);
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .expert-suggestion.hidden {
+  display: none;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .expert-suggestion small,
+body.first-screen-v22a[data-premium-screen="analyze"] .expert-suggestion strong {
+  display: block;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .expert-suggestion small {
+  margin-bottom: 2px;
+  color: var(--v21-muted);
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .expert-change {
+  min-width: 72px;
+  min-height: 44px;
+  border: 1px solid rgba(145, 158, 214, .2);
+  border-radius: 12px;
+  background: rgba(17, 26, 50, .82);
+  color: var(--v21-text);
+  font-weight: 800;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .trader-options,
+body.first-screen-v22a[data-premium-screen="analyze"] .analysis-preferences {
+  margin-top: 10px;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"]:not(.v22a-has-intent) .field-group,
+body.first-screen-v22a[data-premium-screen="analyze"]:not(.v22a-has-intent) .primary-actions {
+  display: none !important;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"].v22a-has-intent .field-group,
+body.first-screen-v22a[data-premium-screen="analyze"].v22a-has-intent .primary-actions {
+  display: block;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .field-group {
+  margin-top: 16px;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] #question {
+  min-height: 96px;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] .primary-actions {
+  margin-top: 12px;
+}
+
+body.first-screen-v22a[data-premium-screen="analyze"] #analyze {
+  width: 100%;
+}
+
+.expert-dialog {
+  width: min(92vw, 500px);
+  max-height: 86dvh;
+  padding: 0;
+  border: 1px solid rgba(145, 158, 214, .22);
+  border-radius: 22px;
+  background: #0d1428;
+  color: #f5f7ff;
+}
+
+.expert-dialog::backdrop {
+  background: rgba(2, 5, 14, .78);
+  backdrop-filter: blur(5px);
+}
+
+.expert-dialog-card {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+}
+
+.expert-dialog-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.expert-dialog-heading h2,
+.expert-dialog-heading small,
+.expert-dialog-card p {
+  margin: 0;
+}
+
+.expert-dialog-card p,
+.expert-dialog-heading small {
+  color: #a8b1cf;
+}
+
+.expert-back {
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(145, 158, 214, .2);
+  border-radius: 12px;
+  background: #111a32;
+  color: #f5f7ff;
+}
+
+.expert-list {
+  display: grid;
+  gap: 8px;
+  overflow: auto;
+}
+
+.expert-option {
+  display: grid;
+  min-height: 64px;
+  padding: 11px 13px;
+  border: 1px solid rgba(145, 158, 214, .18);
+  border-radius: 13px;
+  background: #111a32;
+  color: #f5f7ff;
+  text-align: left;
+}
+
+.expert-option small {
+  margin-top: 3px;
+  color: #a8b1cf;
+}
+
+.expert-option.is-active {
+  border-color: rgba(133, 111, 255, .72);
+  background: rgba(86, 75, 194, .3);
+}
+
+@media (max-width: 900px), (pointer: coarse) {
+  body.first-screen-v22a[data-premium-screen="analyze"] .premium-topbar {
+    position: static;
+    margin: 0;
+    padding: 12px 0;
+    background: transparent;
+    backdrop-filter: none;
+  }
+
+  body.first-screen-v22a[data-premium-screen="analyze"] #install-app,
+  body.first-screen-v22a[data-premium-screen="analyze"] #layout-toggle {
+    display: none !important;
+  }
+
+  body.first-screen-v22a[data-premium-screen="analyze"] .premium-brand h1 {
+    font-size: 1rem;
+  }
+
+  body.first-screen-v22a[data-premium-screen="analyze"] .premium-screen-heading {
+    margin-top: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.first-screen-v22a *,
+  body.first-screen-v22a *::before,
+  body.first-screen-v22a *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
