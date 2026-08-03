@@ -4,7 +4,7 @@ import { initializeAuthGate } from './auth-v20-ui.js';
 
 document.body.dataset.authState = 'loading';
 
-for (const href of ['/auth-v20.css', '/auth-v21.css', '/design-v21.css', '/result-v22.css', '/first-screen-v22a.css']) {
+for (const href of ['/auth-v20.css', '/auth-v21.css', '/design-v21.css', '/result-v22.css', '/first-screen-v22a.css', '/first-screen-v22a-desktop.css']) {
   const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.href = href;
