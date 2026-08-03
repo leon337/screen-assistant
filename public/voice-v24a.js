@@ -1,14 +1,19 @@
 const hasDom = typeof document !== 'undefined';
 const hasWindow = typeof window !== 'undefined';
 
+const EMPTY_ANSWERS = new Set([
+  'Aguardando análise.',
+  'A resposta aparecerá aqui depois da análise.',
+  'Iniciando análise…',
+]);
+
 const ui = {
   dock: null,
   micButton: null,
   speechButton: null,
   rateButton: null,
   settingsButton: null,
-  micState: null,
-  speechState: null,
+  liveState: null,
   sheet: null,
   sheetClose: null,
   legacyTopToggle: null,
@@ -19,8 +24,12 @@ const ui = {
   currentVoice: null,
 };
 
-let speechPoll = null;
+const observers = [];
 let selectObserver = null;
+
+function naturalVoice() {
+  return hasWindow ? window.screenAssistantNaturalVoice : null;
+}
 
 function isMicActive() {
   const source = ui.legacyTopToggle || ui.legacyCommandToggle;
@@ -28,7 +37,11 @@ function isMicActive() {
 }
 
 function isSpeaking() {
-  return Boolean(hasWindow && window.speechSynthesis?.speaking);
+  return Boolean(naturalVoice()?.isSpeaking?.() || hasWindow && window.speechSynthesis?.speaking);
+}
+
+function isGeneratingNaturalVoice() {
+  return Boolean(naturalVoice()?.isBusy?.() && !naturalVoice()?.isSpeaking?.());
 }
 
 function currentRate() {
@@ -36,29 +49,54 @@ function currentRate() {
   return output?.value || output?.textContent || '1.0x';
 }
 
+function answerReady() {
+  const answer = document.getElementById('answer');
+  const text = answer?.textContent?.trim() || '';
+  const busy = answer?.getAttribute('aria-busy') === 'true';
+  return Boolean(text && !busy && !EMPTY_ANSWERS.has(text));
+}
+
+function shouldShowDock() {
+  return document.body.dataset.premiumScreen === 'result' && answerReady();
+}
+
 function updateDock() {
   const micActive = isMicActive();
   const speaking = isSpeaking();
+  const generating = isGeneratingNaturalVoice();
   const rate = currentRate();
+
+  if (ui.dock) ui.dock.hidden = !shouldShowDock();
 
   if (ui.micButton) {
     ui.micButton.setAttribute('aria-pressed', String(micActive));
     ui.micButton.classList.toggle('is-active', micActive);
-    ui.micButton.textContent = micActive ? '🎙 Desligar' : '🎙 Escutar';
+    ui.micButton.querySelector('[data-label]').textContent = micActive ? 'Mic ativo' : 'Mic';
   }
 
   if (ui.speechButton) {
-    ui.speechButton.classList.toggle('is-active', speaking);
-    ui.speechButton.textContent = speaking ? '■ Parar' : '▶ Ouvir';
-    ui.speechButton.setAttribute('aria-label', speaking ? 'Interromper leitura' : 'Ouvir resposta');
+    ui.speechButton.classList.toggle('is-active', speaking || generating);
+    ui.speechButton.disabled = !answerReady();
+    ui.speechButton.querySelector('[data-label]').textContent = speaking
+      ? 'Parar'
+      : generating
+        ? 'Gerando…'
+        : 'Ouvir';
+    ui.speechButton.setAttribute('aria-label', speaking || generating
+      ? 'Interromper leitura'
+      : 'Ouvir resposta');
   }
 
   if (ui.rateButton) ui.rateButton.textContent = rate;
-  if (ui.micState) ui.micState.textContent = micActive ? 'Microfone ativo' : 'Microfone desligado';
-  if (ui.speechState) ui.speechState.textContent = speaking ? 'Lendo resposta' : 'Leitura parada';
+  if (ui.liveState) {
+    const voiceMode = naturalVoice()?.getMode?.() === 'device' ? 'voz do aparelho' : 'voz natural';
+    const microphone = micActive ? 'microfone ativo' : 'microfone desligado';
+    const playback = speaking ? 'lendo resposta' : generating ? 'gerando áudio' : 'leitura parada';
+    ui.liveState.textContent = `${voiceMode}, ${microphone}, ${playback}, velocidade ${rate}`;
+  }
 
   document.body.dataset.voiceMic = micActive ? 'active' : 'inactive';
-  document.body.dataset.voiceSpeech = speaking ? 'speaking' : 'idle';
+  document.body.dataset.voiceSpeech = speaking ? 'speaking' : generating ? 'generating' : 'idle';
 }
 
 function openSheet() {
@@ -91,9 +129,28 @@ function toggleMicrophone() {
   triggerLegacy(ui.legacyTopToggle || ui.legacyCommandToggle);
 }
 
-function toggleSpeech() {
-  if (isSpeaking()) triggerLegacy(ui.legacyStop);
-  else triggerLegacy(ui.legacySpeak);
+async function toggleSpeech() {
+  const natural = naturalVoice();
+
+  if (natural?.isBusy?.()) {
+    natural.stop?.();
+    updateDock();
+    return;
+  }
+
+  if (window.speechSynthesis?.speaking) {
+    triggerLegacy(ui.legacyStop);
+    return;
+  }
+
+  if (natural?.getMode?.() === 'natural') {
+    const handled = await natural.speakAnswer();
+    if (!handled) triggerLegacy(ui.legacySpeak);
+    updateDock();
+    return;
+  }
+
+  triggerLegacy(ui.legacySpeak);
 }
 
 function shortVoiceName(text) {
@@ -101,9 +158,13 @@ function shortVoiceName(text) {
     .split('·')
     .map((part) => part.trim())
     .filter(Boolean);
-  if (!parts.length) return 'Português (Brasil)';
-  if (parts.length === 1) return parts[0].replace(/\s+—\s+voz padrão do sistema$/i, '');
-  return parts[1] || parts[0];
+  if (!parts.length) return 'Voz do aparelho';
+  if (parts.length === 1) {
+    return parts[0]
+      .replace(/^Português \(Brasil\)\s*[—-]\s*/i, '')
+      .replace(/voz padrão do sistema/i, 'Voz do aparelho');
+  }
+  return parts.find((part) => !/português|aparelho/i.test(part)) || 'Voz do aparelho';
 }
 
 function updateVoiceLabels() {
@@ -117,10 +178,18 @@ function updateVoiceLabels() {
     option.title = fullLabel;
   }
 
-  const selected = ui.voiceSelect.selectedOptions?.[0];
-  if (ui.currentVoice) {
-    const name = selected?.textContent?.trim() || 'Voz padrão';
-    ui.currentVoice.textContent = `${name} · Português (Brasil)`;
+  const voiceControl = ui.voiceSelect.closest('.voice-control-v23');
+  const label = voiceControl?.querySelector('label');
+  const helper = voiceControl?.querySelector('small');
+  const onlyOneVoice = ui.voiceSelect.options.length <= 1;
+
+  ui.voiceSelect.hidden = onlyOneVoice;
+  if (helper) helper.hidden = onlyOneVoice;
+  if (label) label.textContent = onlyOneVoice ? 'Voz do aparelho' : 'Voz do aparelho em português';
+
+  if (ui.currentVoice && !naturalVoice()) {
+    const selected = ui.voiceSelect.selectedOptions?.[0];
+    ui.currentVoice.textContent = `${selected?.textContent?.trim() || 'Voz do aparelho'} · Português (Brasil)`;
   }
 }
 
@@ -137,13 +206,12 @@ function moveLegacyPanelIntoSheet() {
     <section class="voice-sheet-card-v24a">
       <header class="voice-sheet-header-v24a">
         <div>
-          <small>ACESSIBILIDADE</small>
+          <small>VOZ</small>
           <h2 id="voice-sheet-title-v24a">Voz e comandos</h2>
         </div>
-        <button id="voice-sheet-close-v24a" class="voice-sheet-close-v24a" type="button" aria-label="Fechar ajustes de voz">✕</button>
+        <button id="voice-sheet-close-v24a" class="voice-sheet-close-v24a" type="button" aria-label="Fechar ajustes de voz">Fechar</button>
       </header>
-      <p class="voice-sheet-intro-v24a">Ajuste a leitura e os comandos sem ocupar a tela do resultado.</p>
-      <p id="voice-current-v24a" class="voice-current-v24a">Português (Brasil)</p>
+      <p id="voice-current-v24a" class="voice-current-v24a">Voz natural · Português (Brasil)</p>
       <div id="voice-sheet-content-v24a"></div>
     </section>`;
 
@@ -172,33 +240,36 @@ function buildDock() {
   ui.dock = document.createElement('section');
   ui.dock.id = 'voice-dock-v24a';
   ui.dock.className = 'voice-dock-v24a';
+  ui.dock.hidden = true;
   ui.dock.setAttribute('aria-label', 'Controles rápidos de voz');
   ui.dock.innerHTML = `
-    <div class="voice-dock-state-v24a" aria-live="polite">
-      <span id="voice-mic-state-v24a">Microfone desligado</span>
-      <span aria-hidden="true">·</span>
-      <span id="voice-speech-state-v24a">Leitura parada</span>
-    </div>
     <div class="voice-dock-actions-v24a">
-      <button id="voice-mic-v24a" type="button" aria-pressed="false">🎙 Escutar</button>
-      <button id="voice-speech-v24a" type="button">▶ Ouvir</button>
+      <button id="voice-mic-v24a" type="button" aria-pressed="false"><span aria-hidden="true">●</span><span data-label>Mic</span></button>
+      <button id="voice-speech-v24a" type="button"><span aria-hidden="true">▶</span><span data-label>Ouvir</span></button>
       <button id="voice-rate-v24a" type="button" aria-label="Abrir velocidade da leitura">1.0x</button>
-      <button id="voice-settings-open-v24a" type="button" aria-label="Abrir ajustes de voz">⚙ Ajustes</button>
-    </div>`;
+      <button id="voice-settings-open-v24a" type="button" aria-label="Abrir ajustes de voz">Ajustes</button>
+    </div>
+    <span id="voice-live-state-v24a" class="sr-only" aria-live="polite"></span>`;
 
   responseActions.insertAdjacentElement('afterend', ui.dock);
   ui.micButton = document.getElementById('voice-mic-v24a');
   ui.speechButton = document.getElementById('voice-speech-v24a');
   ui.rateButton = document.getElementById('voice-rate-v24a');
   ui.settingsButton = document.getElementById('voice-settings-open-v24a');
-  ui.micState = document.getElementById('voice-mic-state-v24a');
-  ui.speechState = document.getElementById('voice-speech-state-v24a');
+  ui.liveState = document.getElementById('voice-live-state-v24a');
 
   ui.micButton?.addEventListener('click', toggleMicrophone);
   ui.speechButton?.addEventListener('click', toggleSpeech);
   ui.rateButton?.addEventListener('click', openSheet);
   ui.settingsButton?.addEventListener('click', openSheet);
   return true;
+}
+
+function observe(element, options) {
+  if (!element) return;
+  const observer = new MutationObserver(updateDock);
+  observer.observe(element, options);
+  observers.push(observer);
 }
 
 function connectLegacyControls() {
@@ -208,16 +279,17 @@ function connectLegacyControls() {
   ui.legacyStop = document.getElementById('stop-voice');
   ui.voiceSelect = document.getElementById('voice-select-v23');
 
-  const observePressed = (element) => {
-    if (!element) return;
-    new MutationObserver(updateDock).observe(element, {
-      attributes: true,
-      attributeFilter: ['aria-pressed', 'disabled'],
-    });
-  };
-
-  observePressed(ui.legacyTopToggle);
-  observePressed(ui.legacyCommandToggle);
+  observe(ui.legacyTopToggle, { attributes: true, attributeFilter: ['aria-pressed', 'disabled'] });
+  observe(ui.legacyCommandToggle, { attributes: true, attributeFilter: ['aria-pressed', 'disabled'] });
+  observe(ui.legacyStop, { attributes: true, attributeFilter: ['disabled'] });
+  observe(document.body, { attributes: true, attributeFilter: ['data-premium-screen'] });
+  observe(document.getElementById('answer'), {
+    childList: true,
+    subtree: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ['aria-busy'],
+  });
 
   const rate = document.getElementById('voice-rate-v23');
   rate?.addEventListener('input', updateDock);
@@ -229,6 +301,8 @@ function connectLegacyControls() {
     selectObserver.observe(ui.voiceSelect, { childList: true, subtree: true });
     updateVoiceLabels();
   }
+
+  document.addEventListener('screen-assistant-natural-voice-change', updateDock);
 }
 
 function initialize() {
@@ -240,13 +314,11 @@ function initialize() {
   updateVoiceLabels();
 
   document.body.classList.add('voice-v24a-ready');
-  document.body.dataset.voiceDesign = 'phase-24a';
-
-  speechPoll = window.setInterval(updateDock, 250);
+  document.body.dataset.voiceDesign = 'phase-24a-natural';
   updateDock();
 
   window.addEventListener('beforeunload', () => {
-    window.clearInterval(speechPoll);
+    observers.forEach((observer) => observer.disconnect());
     selectObserver?.disconnect();
   });
 }
