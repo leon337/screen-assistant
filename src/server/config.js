@@ -1,3 +1,6 @@
+const DEFAULT_SUPABASE_URL = 'https://qylqyhxpwffiripcpjej.supabase.co';
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_UAUGspLhLkNcMawj6tFvtg_7BoRe1Ih';
+
 const integer = (value, fallback, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) => {
   const parsed = Number.parseInt(String(value ?? ''), 10);
   if (!Number.isFinite(parsed)) return fallback;
@@ -8,8 +11,10 @@ export function loadConfig(env = process.env) {
   return Object.freeze({
     appEnv: String(env.APP_ENV || 'preview').trim(),
     release: String(env.APP_RELEASE || 'phase-20-saas-auth').trim(),
-    supabaseUrl: String(env.SUPABASE_URL || '').trim().replace(/\/$/, ''),
-    supabasePublishableKey: String(env.SUPABASE_PUBLISHABLE_KEY || env.SUPABASE_ANON_KEY || '').trim(),
+    supabaseUrl: String(env.SUPABASE_URL || DEFAULT_SUPABASE_URL).trim().replace(/\/$/, ''),
+    supabasePublishableKey: String(
+      env.SUPABASE_PUBLISHABLE_KEY || env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY,
+    ).trim(),
     aiMode: String(env.AI_MODE || 'simulated').trim(),
     geminiApiKey: String(env.GEMINI_API_KEY || '').trim(),
     geminiModel: String(env.GEMINI_MODEL || 'gemini-3.5-flash-lite').trim(),
