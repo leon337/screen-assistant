@@ -112,7 +112,8 @@ function updateVoiceLabels() {
   for (const option of ui.voiceSelect.options) {
     const fullLabel = option.dataset.fullLabel || option.textContent || '';
     option.dataset.fullLabel = fullLabel;
-    option.textContent = shortVoiceName(fullLabel);
+    const shortLabel = shortVoiceName(fullLabel);
+    if (option.textContent !== shortLabel) option.textContent = shortLabel;
     option.title = fullLabel;
   }
 
@@ -236,6 +237,7 @@ function initialize() {
 
   connectLegacyControls();
   if (!moveLegacyPanelIntoSheet()) return;
+  updateVoiceLabels();
 
   document.body.classList.add('voice-v24a-ready');
   document.body.dataset.voiceDesign = 'phase-24a';
