@@ -1,4 +1,19 @@
 import './status.js';
+import './premium-v18.js';
+import { initializeAuthGate } from './auth-v20-ui.js';
+
+document.body.dataset.authState = 'loading';
+
+for (const href of ['/auth-v20.css', '/auth-v21.css', '/design-v21.css', '/result-v22.css']) {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = href;
+  document.head.append(link);
+}
+
+await initializeAuthGate();
+await import('./design-v21.js');
+await import('./result-v22.js');
 
 const answer = document.getElementById('answer');
 

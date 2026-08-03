@@ -1,15 +1,12 @@
 import { loadConfig, validateConfig } from '../../src/server/config.js';
-import { authorizeRequest } from '../../src/server/auth.js';
+import { authenticateRequest } from '../../src/server/auth.js';
 import { clientIp, consumeRateLimit } from '../../src/server/rate-limit.js';
 import { validateAnalysisInput } from '../../src/server/validation.js';
+import { buildExpertPrompt, getExpertProfile, getTaskContract } from '../../src/server/expert-profiles.js';
 import { apiError, responseHeaders } from '../../src/server/errors.js';
 import { analyzeWithGemini } from '../../src/server/providers/gemini.js';
 
 export const config = { runtime: 'edge' };
-
-function buildPrompt(question) {
-  return `Responda em português do Brasil. Descreva somente o que está visível na captura e separe observação direta de qualquer interpretação. Não invente, não complete lacunas e não estime nomes, números, datas, valores, rótulos ou indicadores que estejam pequenos, borrados, parcialmente ocultos ou sem nitidez suficiente. Nesses casos, escreva exatamente "não foi possível confirmar" e indique brevemente qual região da imagem ficou incerta. Não apresente suposições como fatos. Use obrigatoriamente esta estrutura em Markdown: ## Resumo, ## Observação direta, ## Interpretação e, somente quando útil, ## Detalhes técnicos. Mantenha o resumo curto, use listas e separadores quando ajudarem; nunca use HTML. Quando a imagem mostrar gráficos financeiros, limite-se a descrever elementos visuais e dados legíveis, sem garantir tendência futura nem recomendar compra, venda ou aposta. Pergunta: ${question || 'Explique o conteúdo principal.'}`;
-}
 
 export default async function handler(request) {
   const requestId = request.headers.get('x-request-id') || crypto.randomUUID();
@@ -25,19 +22,27 @@ export default async function handler(request) {
     return apiError(requestId, appConfig.release, 503, 'CONFIG', 'Serviço temporariamente indisponível.');
   }
 
-  if (!authorizeRequest(request, appConfig.accessToken)) {
-    return apiError(requestId, appConfig.release, 401, 'AUTH_REQUIRED', 'Código de acesso inválido ou ausente.');
+  const authentication = await authenticateRequest(request, appConfig);
+  if (authentication.error) {
+    return apiError(
+      requestId,
+      appConfig.release,
+      authentication.error.status,
+      authentication.error.code,
+      authentication.error.message,
+    );
   }
 
   const ip = clientIp(request);
-  const rate = consumeRateLimit(ip, { max: appConfig.rateLimitMax, windowMs: appConfig.rateLimitWindowMs });
+  const rateKey = `${authentication.user.id}:${ip}`;
+  const rate = consumeRateLimit(rateKey, { max: appConfig.rateLimitMax, windowMs: appConfig.rateLimitWindowMs });
   if (!rate.allowed) {
     const retryAfter = Math.max(1, Math.ceil((rate.resetAt - Date.now()) / 1000));
     return apiError(
       requestId,
       appConfig.release,
       429,
-      'RATE_LIMIT_LOCAL',
+      'RATE_LIMIT_USER',
       'Limite temporário de análises atingido. Tente novamente em instantes.',
       { 'retry-after': String(retryAfter) },
     );
@@ -55,10 +60,19 @@ export default async function handler(request) {
     return apiError(requestId, appConfig.release, input.error.status, input.error.code, input.error.message);
   }
 
+  const profile = getExpertProfile(input.profileId);
+  const task = getTaskContract(input.taskId);
+  const prompt = buildExpertPrompt({
+    profileId: input.profileId,
+    taskId: input.taskId,
+    responseMode: input.responseMode,
+    question: input.question,
+  });
+
   const result = await analyzeWithGemini({
     config: appConfig,
     image: input.image,
-    prompt: buildPrompt(input.question),
+    prompt,
     requestId,
   });
 
@@ -74,7 +88,18 @@ export default async function handler(request) {
       provider: 'gemini',
       model: result.model,
       fallback: result.fallback,
+      expertProfile: {
+        id: profile.id,
+        name: profile.name,
+        fallbackUsed: input.profileFallbackUsed,
+      },
+      task: {
+        id: task.id,
+        fallbackUsed: input.taskFallbackUsed,
+      },
+      responseMode: input.responseMode,
       image: { sizeBytes: input.image.size },
+      account: { userId: authentication.user.id },
       release: appConfig.release,
     },
   }), {

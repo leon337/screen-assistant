@@ -11,10 +11,10 @@ const serviceWorker = await readFile(new URL('public/service-worker.js', root), 
 const config = await readFile(new URL('src/server/config.js', root), 'utf8');
 
 test('endpoint expõe apenas estado e não expõe segredos', () => {
-  assert.match(statusApi, /accessConfigured/);
+  assert.match(statusApi, /authConfigured/);
   assert.match(statusApi, /providerConfigured/);
   assert.match(statusApi, /cache-control.*no-store/s);
-  assert.doesNotMatch(statusApi, /accessToken\s*:/);
+  assert.doesNotMatch(statusApi, /supabasePublishableKey\s*:/);
   assert.doesNotMatch(statusApi, /geminiApiKey\s*:/);
 });
 
@@ -22,7 +22,7 @@ test('painel operacional permanece visível e atualizável', () => {
   assert.match(statusClient, /Estado da aplicação/);
   assert.match(statusClient, /Atualizar estado/);
   assert.match(statusClient, /aria-live/);
-  assert.match(statusClient, /PREVIEW_ACCESS_TOKEN/);
+  assert.match(statusClient, /SUPABASE_URL/);
   assert.match(statusClient, /fetch\('\/api\/v1\/status'/);
   assert.match(statusStyles, /operations-grid/);
 });
@@ -33,7 +33,7 @@ test('carrega o painel sem alterar a jornada principal', () => {
   assert.match(serviceWorker, /status\.css/);
 });
 
-test('publica release da Fase 17', () => {
-  assert.match(config, /phase-17-visible-operational-status/);
-  assert.match(serviceWorker, /screen-assistant-v17/);
+test('preserva o painel da Fase 17 na release da Fase 20', () => {
+  assert.match(config, /phase-20-saas-auth/);
+  assert.match(serviceWorker, /screen-assistant-v20-saas-auth/);
 });

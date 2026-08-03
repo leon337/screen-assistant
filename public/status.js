@@ -30,13 +30,13 @@ function createStatusPanel() {
     <p id="operational-status-summary" class="operations-summary" role="status" aria-live="polite">Consultando a publicação…</p>
     <dl class="operations-grid">
       <div><dt>Interface</dt><dd id="status-interface">Publicada</dd></div>
-      <div><dt>API</dt><dd id="status-api">Verificando…</dd></div>
-      <div><dt>Acesso do piloto</dt><dd id="status-access">Verificando…</dd></div>
+      <div><dt>API de IA</dt><dd id="status-api">Verificando…</dd></div>
+      <div><dt>Autenticação</dt><dd id="status-auth">Verificando…</dd></div>
       <div><dt>Release</dt><dd id="status-release">—</dd></div>
       <div><dt>Ambiente</dt><dd id="status-environment">—</dd></div>
       <div><dt>Última verificação</dt><dd id="status-updated">—</dd></div>
     </dl>
-    <p id="operational-status-note" class="operations-note">Nenhum segredo é mostrado neste painel.</p>
+    <p id="operational-status-note" class="operations-note">Nenhuma chave ou dado de usuário é mostrado neste painel.</p>
   `;
 
   const privacyBanner = document.querySelector('.privacy-banner');
@@ -53,7 +53,7 @@ async function refreshStatus() {
   const panel = createStatusPanel();
   const summary = panel.querySelector('#operational-status-summary');
   const api = panel.querySelector('#status-api');
-  const access = panel.querySelector('#status-access');
+  const auth = panel.querySelector('#status-auth');
   const release = panel.querySelector('#status-release');
   const environment = panel.querySelector('#status-environment');
   const updated = panel.querySelector('#status-updated');
@@ -73,8 +73,8 @@ async function refreshStatus() {
     if (!response.ok || payload.status !== 'success') throw new Error('Estado indisponível.');
 
     const data = payload.data;
-    api.textContent = statusLabel(data.provider.configured, 'Gemini configurado', 'Configuração pendente');
-    access.textContent = statusLabel(data.access.configured, 'Código configurado', 'Código pendente');
+    api.textContent = statusLabel(data.provider.configured, 'Gemini configurado', 'Gemini pendente');
+    auth.textContent = statusLabel(data.auth.configured, 'Supabase configurado', 'Supabase pendente');
     release.textContent = data.release || 'Não informado';
     environment.textContent = data.environment || 'Não informado';
     updated.textContent = new Intl.DateTimeFormat('pt-BR', {
@@ -82,19 +82,19 @@ async function refreshStatus() {
     }).format(new Date(data.checkedAt));
 
     if (data.application === 'ready') {
-      summary.textContent = 'Aplicação pronta para o piloto.';
-      note.textContent = 'Interface, API Gemini e código de acesso estão configurados.';
+      summary.textContent = 'Plataforma pronta para autenticação e análises.';
+      note.textContent = 'Interface, autenticação Supabase e API Gemini estão configuradas.';
       setTone(summary, 'success');
     } else {
       summary.textContent = 'Aplicação publicada com pendência operacional.';
-      note.textContent = data.access.configured
-        ? 'A configuração do provedor precisa ser verificada.'
-        : 'Configure PREVIEW_ACCESS_TOKEN na Vercel antes do piloto real.';
+      note.textContent = data.auth.configured
+        ? 'A configuração do provedor Gemini precisa ser verificada.'
+        : 'Configure SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY antes do teste com contas reais.';
       setTone(summary, 'warning');
     }
   } catch {
     api.textContent = 'Não foi possível confirmar';
-    access.textContent = 'Não foi possível confirmar';
+    auth.textContent = 'Não foi possível confirmar';
     summary.textContent = 'Não foi possível consultar o estado agora.';
     note.textContent = 'A interface continua disponível. Tente atualizar novamente.';
     setTone(summary, 'error');

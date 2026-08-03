@@ -1,0 +1,202 @@
+#auth-v20-root {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(75, 112, 255, .14), transparent 28%),
+    radial-gradient(circle at 88% 88%, rgba(137, 81, 255, .12), transparent 28%),
+    #070b16;
+}
+
+.auth-v20-shell {
+  width: min(1040px, calc(100% - 32px));
+  min-height: min(760px, calc(100dvh - 32px));
+  margin: 16px auto;
+  border: 1px solid rgba(145, 158, 214, .15);
+  border-radius: 26px;
+  background: rgba(10, 16, 32, .95);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, .42);
+}
+
+.auth-v20-visual {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(34px, 5vw, 62px);
+  background:
+    linear-gradient(145deg, rgba(54, 84, 177, .28), rgba(94, 56, 176, .14)),
+    #0b142b;
+}
+
+.auth-v20-visual::after {
+  content: "";
+  position: absolute;
+  right: -80px;
+  bottom: -90px;
+  width: 250px;
+  height: 250px;
+  border: 1px solid rgba(154, 139, 255, .14);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 38px rgba(154, 139, 255, .035),
+    0 0 0 76px rgba(154, 139, 255, .025);
+}
+
+.auth-v20-brand-mark {
+  width: 58px;
+  height: 58px;
+  margin-bottom: 22px;
+  border-radius: 17px;
+  box-shadow: 0 14px 34px rgba(89, 98, 255, .22);
+}
+
+.auth-v20-visual h1 {
+  max-width: 520px;
+  font-size: clamp(2rem, 4.5vw, 3.45rem);
+  line-height: 1.04;
+  letter-spacing: -.035em;
+}
+
+.auth-v20-visual > span {
+  max-width: 470px;
+  font-size: .98rem;
+  line-height: 1.65;
+}
+
+.auth-v20-visual ul {
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.auth-v20-visual li {
+  font-size: .9rem;
+}
+
+.auth-v20-card {
+  padding: clamp(28px, 5vw, 62px);
+}
+
+.auth-v20-card-heading {
+  margin-bottom: 24px;
+}
+
+.auth-v20-card-heading h2 {
+  margin-bottom: 8px;
+  font-size: clamp(1.75rem, 3.6vw, 2.35rem);
+  letter-spacing: -.025em;
+}
+
+.auth-v20-form {
+  gap: 14px;
+}
+
+.auth-v20-form label {
+  gap: 7px;
+  font-size: .86rem;
+}
+
+.auth-v20-form input[type="email"],
+.auth-v20-form input[type="password"],
+.auth-v20-form input[type="text"] {
+  min-height: 50px;
+  border-radius: 13px;
+  background: #111a32;
+}
+
+.auth-v20-primary,
+.auth-v20-secondary {
+  min-height: 50px;
+  border-radius: 13px;
+}
+
+.auth-v20-primary {
+  margin-top: 2px;
+  background: linear-gradient(135deg, #728dff, #8769ff);
+  box-shadow: 0 10px 28px rgba(105, 91, 255, .18);
+}
+
+.auth-v20-primary:hover,
+.auth-v20-primary:focus-visible {
+  filter: brightness(1.06);
+}
+
+.auth-v20-secondary {
+  background: rgba(17, 26, 50, .72);
+}
+
+.auth-v20-link {
+  justify-self: center;
+  color: #b9c2ff;
+  font-size: .88rem;
+}
+
+.auth-v20-divider {
+  margin: 2px 0;
+}
+
+.auth-v20-message:not(:empty) {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(145, 158, 214, .07);
+}
+
+.auth-v20-message[data-tone="error"] {
+  border: 1px solid rgba(255, 142, 154, .2);
+  background: rgba(105, 32, 44, .14);
+}
+
+.auth-v20-message[data-tone="success"] {
+  border: 1px solid rgba(119, 214, 164, .18);
+  background: rgba(34, 91, 70, .12);
+}
+
+.auth-v20-form :focus-visible,
+.auth-v20-card button:focus-visible {
+  outline: 3px solid rgba(133, 111, 255, .7);
+  outline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .auth-v20-shell {
+    min-height: 100dvh;
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .auth-v20-card {
+    width: min(100%, 520px);
+    box-sizing: border-box;
+    margin: 0 auto;
+    padding: max(26px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+  }
+
+  .auth-v20-card::before {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 26px;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(89, 98, 255, .22);
+  }
+
+  .auth-v20-card-heading {
+    margin-bottom: 22px;
+  }
+
+  .auth-v20-card-heading h2 {
+    font-size: clamp(1.7rem, 8vw, 2.15rem);
+  }
+
+  .auth-v20-card-heading > span {
+    display: block;
+    max-width: 420px;
+    font-size: .93rem;
+  }
+
+  .auth-v20-form {
+    gap: 13px;
+  }
+
+  .auth-v20-primary,
+  .auth-v20-secondary {
+    min-height: 52px;
+  }
+}
