@@ -14,6 +14,7 @@ const endpoint = read('api/v1/analyze-screen.js');
 const authConfigEndpoint = read('api/v1/auth-config.js');
 const serviceWorker = read('public/service-worker.js');
 const migration = read('supabase/migrations/20260802210000_create_saas_profiles.sql');
+const serverConfig = read('src/server/config.js');
 
 const config = loadConfig({
   APP_RELEASE: 'phase-20-saas-auth',
@@ -57,6 +58,14 @@ test('configuração exige URL e chave publicável do Supabase', () => {
   assert.doesNotMatch(authConfigEndpoint, /service_role/i);
 });
 
+test('preview possui fallback público sem chave administrativa', () => {
+  const fallback = loadConfig({});
+  assert.deepEqual(validateAuthConfig(fallback), []);
+  assert.match(fallback.supabaseUrl, /^https:\/\/.+\.supabase\.co$/);
+  assert.match(fallback.supabasePublishableKey, /^sb_publishable_/);
+  assert.doesNotMatch(serverConfig, /service_role|secret_key/i);
+});
+
 test('backend rejeita ausência de sessão', async () => {
   const result = await authenticateRequest(new Request('https://app.test/api'), config, async () => {
     throw new Error('fetch não deveria ser chamado');
@@ -85,6 +94,8 @@ test('migração cria perfil com RLS e políticas por usuário', () => {
   assert.match(migration, /auth\.uid\(\)/);
   assert.match(migration, /references auth\.users\(id\) on delete cascade/);
   assert.match(migration, /on_auth_user_created/);
+  assert.match(migration, /revoke execute on function public\.handle_new_user\(\) from anon/);
+  assert.match(migration, /revoke execute on function public\.handle_new_user\(\) from authenticated/);
   assert.doesNotMatch(migration, /password/i);
 });
 
