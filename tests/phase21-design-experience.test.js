@@ -66,3 +66,8 @@ test('sincronização visual evita reescritas contínuas do DOM', () => {
   assert.match(designJs, /element\.innerHTML !== value/);
   assert.match(designJs, /requestAnimationFrame\(run\)/);
 });
+
+test('hotfix do login invalida o cache PWA anterior', () => {
+  assert.match(serviceWorker, /screen-assistant-v21-design-experience-hotfix-1/);
+  assert.match(serviceWorker, /keys\.filter\(\(key\) => key !== CACHE\)/);
+});
