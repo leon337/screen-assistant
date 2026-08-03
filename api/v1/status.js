@@ -1,15 +1,15 @@
-import { loadConfig } from '../../src/server/config.js';
+import { loadConfig, validateAuthConfig } from '../../src/server/config.js';
 
 export const config = { runtime: 'edge' };
 
 function readiness(config) {
-  const accessConfigured = config.accessToken.length >= 16;
+  const authConfigured = validateAuthConfig(config).length === 0;
   const providerConfigured = config.aiMode === 'gemini' && config.geminiApiKey.length >= 10;
 
   return {
-    accessConfigured,
+    authConfigured,
     providerConfigured,
-    ready: accessConfigured && providerConfigured,
+    ready: authConfigured && providerConfigured,
   };
 }
 
@@ -25,9 +25,10 @@ export default function handler(request) {
       release: appConfig.release,
       environment: appConfig.appEnv,
       application: state.ready ? 'ready' : 'attention',
-      access: {
+      auth: {
+        provider: 'supabase',
         required: true,
-        configured: state.accessConfigured,
+        configured: state.authConfigured,
       },
       provider: {
         name: 'gemini',
