@@ -58,7 +58,8 @@ function setStatus(message, tone = 'neutral') {
 function answerText() {
   const answer = document.getElementById('answer');
   const text = answer?.textContent?.trim() || '';
-  if (!text || EMPTY_ANSWERS.has(text)) return '';
+  const busy = answer?.getAttribute('aria-busy') === 'true';
+  if (busy || !text || EMPTY_ANSWERS.has(text)) return '';
   return text
     .replace(/\s+\n/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
