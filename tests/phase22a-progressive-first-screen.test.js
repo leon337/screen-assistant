@@ -70,6 +70,16 @@ test('Nova análise limpa imagem, pergunta e contexto', () => {
   assert.match(handler, /resetResponse\(\)/);
 });
 
+test('reiniciar ou trocar imagem retorna explicitamente para a rota de análise', () => {
+  assert.match(screen, /function activateAnalyzeRoute\(/);
+  assert.match(screen, /dataset\.premiumScreen = 'analyze'/);
+  assert.match(screen, /premium-screen-analyze/);
+  assert.match(screen, /premium-screen-result/);
+  assert.match(screen, /history\.replaceState\(null, '', '#analyze'\)/);
+  assert.match(screen, /newAnalysis\.addEventListener\('click', activateAnalyzeRoute, \{ capture: true \}\)/);
+  assert.match(screen, /changeImage\.addEventListener\('click', activateAnalyzeRoute, \{ capture: true \}\)/);
+});
+
 test('Repetir análise preserva contexto explicitamente', () => {
   assert.match(app, /elements\.repeatAnalysis\.addEventListener\('click', analyzeCurrentImage\)/);
 });
