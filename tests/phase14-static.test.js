@@ -56,9 +56,9 @@ test('publica PWA sem armazenar a API em cache', () => {
   assert.doesNotMatch(sw, /APP_SHELL[^;]*api\/v1/s);
 });
 
-test('backend usa contratos especializados na release da Fase 19', () => {
+test('backend usa contratos especializados na release da Fase 20', () => {
   assert.match(api, /buildExpertPrompt/);
   assert.match(profiles, /TRUTH_POLICY/);
   assert.match(profiles, /trader-complete-analysis/);
-  assert.match(config, /phase-19-intent-trader-v2/);
+  assert.match(config, /phase-20-saas-auth/);
 });
