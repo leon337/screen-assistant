@@ -6,8 +6,9 @@ const CACHE_LINEAGE = [
   'screen-assistant-v22a-progressive-first-screen-hotfix-1',
   'screen-assistant-v22a-progressive-first-screen-hotfix-2',
   'screen-assistant-v23-voice-controls',
+  'screen-assistant-v23-voice-controls-hotfix-1',
 ];
-const CACHE = 'screen-assistant-v23-voice-controls-hotfix-1';
+const CACHE = 'screen-assistant-v23-voice-controls-ptbr-hotfix-2';
 const APP_SHELL = [
   '/', '/index.html', '/styles.css', '/status.css', '/premium-v18.css', '/intent-v19.css',
   '/auth-v20.css', '/auth-v21.css', '/design-v21.css', '/result-v22.css', '/first-screen-v22a.css', '/first-screen-v22a-desktop.css', '/voice-v23.css',
