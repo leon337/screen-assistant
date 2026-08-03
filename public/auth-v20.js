@@ -5,7 +5,12 @@ let authConfigPromise = null;
 let session = readStoredSession();
 const listeners = new Set();
 
+function hasBrowserStorage() {
+  return typeof localStorage !== 'undefined';
+}
+
 function readStoredSession() {
+  if (!hasBrowserStorage()) return null;
   try {
     const parsed = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
     return parsed?.accessToken && parsed?.refreshToken ? parsed : null;
@@ -21,8 +26,10 @@ function notify() {
 
 function saveSession(nextSession) {
   session = nextSession;
-  if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-  else localStorage.removeItem(SESSION_KEY);
+  if (hasBrowserStorage()) {
+    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    else localStorage.removeItem(SESSION_KEY);
+  }
   notify();
   return session;
 }
@@ -178,6 +185,7 @@ export async function signOut() {
 }
 
 export function consumeSessionFromUrl() {
+  if (typeof location === 'undefined') return false;
   const params = new URLSearchParams(location.hash.replace(/^#/, ''));
   const accessToken = params.get('access_token');
   const refreshToken = params.get('refresh_token');
