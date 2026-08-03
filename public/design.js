@@ -17,6 +17,7 @@ await import('./design-v21.js');
 await import('./result-v22.js');
 await import('./first-screen-v22a.js');
 await import('./voice-v23.js');
+await import('./voice-v23-build.js');
 document.body.dataset.voiceControls = 'ready';
 
 const answer = document.getElementById('answer');
