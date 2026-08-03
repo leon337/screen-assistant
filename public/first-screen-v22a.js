@@ -6,6 +6,48 @@ function setText(element, value) {
   if (element && element.textContent !== value) element.textContent = value;
 }
 
+function activateAnalyzeRoute() {
+  if (!hasDom) return;
+
+  document.body.dataset.premiumScreen = 'analyze';
+
+  const screens = {
+    analyze: document.getElementById('premium-screen-analyze'),
+    result: document.getElementById('premium-screen-result'),
+    status: document.getElementById('premium-screen-status'),
+  };
+
+  for (const [name, screen] of Object.entries(screens)) {
+    const active = name === 'analyze';
+    screen?.classList.toggle('is-active', active);
+    screen?.setAttribute('aria-hidden', String(!active));
+  }
+
+  document.querySelectorAll('[data-premium-route]').forEach((tab) => {
+    const active = tab.dataset.premiumRoute === 'analyze';
+    tab.classList.toggle('is-active', active);
+    tab.setAttribute('aria-current', active ? 'page' : 'false');
+  });
+
+  history.replaceState(null, '', '#analyze');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function bindRestartActions() {
+  const newAnalysis = document.getElementById('new-analysis');
+  const changeImage = document.getElementById('change-image');
+
+  if (newAnalysis && newAnalysis.dataset.v22aRouteBound !== 'true') {
+    newAnalysis.dataset.v22aRouteBound = 'true';
+    newAnalysis.addEventListener('click', activateAnalyzeRoute, { capture: true });
+  }
+
+  if (changeImage && changeImage.dataset.v22aRouteBound !== 'true') {
+    changeImage.dataset.v22aRouteBound = 'true';
+    changeImage.addEventListener('click', activateAnalyzeRoute, { capture: true });
+  }
+}
+
 function addChangeImageAction() {
   if (!hasDom || document.getElementById('v22a-change-image')) return;
   const previewMeta = document.querySelector('.preview-meta');
@@ -33,6 +75,7 @@ function simplifyCopy() {
 }
 
 function synchronize() {
+  bindRestartActions();
   addChangeImageAction();
   simplifyCopy();
 }
