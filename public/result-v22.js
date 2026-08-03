@@ -6,6 +6,10 @@ function setText(element, value) {
   if (element && element.textContent !== value) element.textContent = value;
 }
 
+function setHidden(element, hidden) {
+  if (element && element.hidden !== hidden) element.hidden = hidden;
+}
+
 function ensureTechnicalDetails() {
   const meta = document.getElementById('response-meta');
   const moreActions = document.querySelector('.more-actions');
@@ -29,8 +33,6 @@ function synchronizeResultExperience() {
 
   const answer = document.getElementById('answer');
   const busy = answer?.getAttribute('aria-busy') === 'true';
-  const screen = document.body.dataset.premiumScreen;
-  const hasResult = screen === 'result';
   const title = document.querySelector('.response-title h2');
   const resultLead = document.getElementById('design-v21-result-lead');
   const details = ensureTechnicalDetails();
@@ -45,12 +47,8 @@ function synchronizeResultExperience() {
   setText(document.getElementById('repeat-analysis'), 'Analisar novamente');
   setText(document.getElementById('clear-all'), 'Apagar análise');
 
-  if (resultLead) resultLead.hidden = true;
-  if (details) details.hidden = !meta?.textContent?.trim();
-
-  if (hasResult && busy) {
-    document.querySelector('.response-panel')?.scrollIntoView({ block: 'start' });
-  }
+  setHidden(resultLead, true);
+  setHidden(details, !meta?.textContent?.trim());
 }
 
 function scheduleSynchronization() {
