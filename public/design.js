@@ -4,12 +4,15 @@ import { initializeAuthGate } from './auth-v20-ui.js';
 
 document.body.dataset.authState = 'loading';
 
-const authStyles = document.createElement('link');
-authStyles.rel = 'stylesheet';
-authStyles.href = '/auth-v20.css';
-document.head.append(authStyles);
+for (const href of ['/auth-v20.css', '/auth-v21.css', '/design-v21.css']) {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = href;
+  document.head.append(link);
+}
 
 await initializeAuthGate();
+await import('./design-v21.js');
 
 const answer = document.getElementById('answer');
 
