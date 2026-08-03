@@ -129,8 +129,8 @@ test('estado operacional aparece como Mais na jornada mobile', () => {
   assert.match(premium, /status: \['Mais'/);
 });
 
-test('PWA inclui os assets da Fase 19', () => {
-  assert.match(serviceWorker, /screen-assistant-v19/);
+test('PWA preserva os assets da Fase 19 dentro da Fase 20', () => {
+  assert.match(serviceWorker, /screen-assistant-v20-saas-auth/);
   assert.match(serviceWorker, /intent-v19\.js/);
   assert.match(serviceWorker, /intent-v19\.css/);
 });
