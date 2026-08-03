@@ -8,6 +8,7 @@ const voice = read('public/voice-v23.js');
 const styles = read('public/voice-v23.css');
 const loader = read('public/design.js');
 const serviceWorker = read('public/service-worker.js');
+const vercel = read('vercel.json');
 
 test('módulo de voz possui JavaScript sintaticamente válido', () => {
   assert.doesNotThrow(() => new Function(voice));
@@ -43,6 +44,11 @@ test('microfone começa desligado e exige ativação explícita', () => {
   assert.match(voice, /ui\.topToggle\.addEventListener\('click', toggleCommands\)/);
   assert.doesNotMatch(voice, /commandsArmed:\s*state/);
   assert.doesNotMatch(voice, /commandsArmed\s*\}/);
+});
+
+test('política HTTP permite microfone somente para a própria aplicação', () => {
+  assert.match(vercel, /camera=\(self\), microphone=\(self\), geolocation=\(\)/);
+  assert.doesNotMatch(vercel, /microphone=\(\)/);
 });
 
 test('wake phrase e janela de segundo comando são implementadas', () => {
