@@ -18,9 +18,9 @@ test('controles de voz expõem loading antes da importação e ready depois', ()
   assert.ok(ready > markerImport);
 });
 
-test('marcador da fase 23 é verificável no DOM e publicado pela PWA', () => {
-  assert.match(marker, /phase-23-voice-controls-1/);
+test('marcador do hotfix pt-BR é verificável no DOM e publicado pela PWA', () => {
+  assert.match(marker, /phase-23-voice-controls-ptbr-hotfix-2/);
   assert.match(marker, /document\.body\.dataset\.voiceBuild/);
-  assert.match(serviceWorker, /screen-assistant-v23-voice-controls-hotfix-1/);
+  assert.match(serviceWorker, /screen-assistant-v23-voice-controls-ptbr-hotfix-2/);
   assert.match(serviceWorker, /voice-v23-build\.js/);
 });
