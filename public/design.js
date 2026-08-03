@@ -4,7 +4,7 @@ import { initializeAuthGate } from './auth-v20-ui.js';
 
 document.body.dataset.authState = 'loading';
 
-for (const href of ['/auth-v20.css', '/auth-v21.css', '/design-v21.css']) {
+for (const href of ['/auth-v20.css', '/auth-v21.css', '/design-v21.css', '/result-v22.css']) {
   const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.href = href;
@@ -13,6 +13,7 @@ for (const href of ['/auth-v20.css', '/auth-v21.css', '/design-v21.css']) {
 
 await initializeAuthGate();
 await import('./design-v21.js');
+await import('./result-v22.js');
 
 const answer = document.getElementById('answer');
 
