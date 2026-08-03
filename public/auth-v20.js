@@ -9,6 +9,11 @@ function hasBrowserStorage() {
   return typeof localStorage !== 'undefined';
 }
 
+function currentRedirect(path = '/') {
+  if (typeof location === 'undefined') return '';
+  return `${location.origin}${path}`;
+}
+
 function readStoredSession() {
   if (!hasBrowserStorage()) return null;
   try {
@@ -106,7 +111,9 @@ export async function signIn({ email, password }) {
 }
 
 export async function signUp({ displayName, email, password }) {
-  const payload = await authFetch('/signup', {
+  const redirectTo = currentRedirect('/');
+  const signupPath = redirectTo ? `/signup?redirect_to=${encodeURIComponent(redirectTo)}` : '/signup';
+  const payload = await authFetch(signupPath, {
     body: {
       email: email.trim(),
       password,
@@ -126,7 +133,7 @@ export async function requestPasswordReset(email) {
   return authFetch('/recover', {
     body: {
       email: email.trim(),
-      redirect_to: `${location.origin}/?password-reset=1`,
+      redirect_to: currentRedirect('/?password-reset=1'),
     },
   });
 }
