@@ -115,6 +115,40 @@ test('modo natural é padrão e dispositivo continua disponível', () => {
   assert.match(client, /screen-assistant-natural-voice-v24a/);
 });
 
+test('voz natural é pré-carregada quando a resposta termina', () => {
+  assert.match(client, /PRELOAD_DELAY_MS = 450/);
+  assert.match(client, /export function preloadNaturalSpeech/);
+  assert.match(client, /function queueNaturalSpeechPreload/);
+  assert.match(client, /new MutationObserver\(queueNaturalSpeechPreload\)/);
+  assert.match(client, /attributeFilter: \['aria-busy'\]/);
+  assert.match(client, /const busy = answer\?\.getAttribute\('aria-busy'\) === 'true'/);
+  assert.match(client, /if \(busy \|\| !text/);
+});
+
+test('cache em memória reutiliza o áudio da resposta atual', () => {
+  assert.match(client, /let cachedAudio = null/);
+  assert.match(client, /function speechKey/);
+  assert.match(client, /cachedAudio = \{ key, data \}/);
+  assert.match(client, /if \(cachedAudio\?\.key === key\)/);
+  assert.match(client, /source: 'cache'/);
+  assert.doesNotMatch(client, /localStorage\.setItem\([^\n]*audio/i);
+  assert.doesNotMatch(client, /indexedDB/i);
+});
+
+test('resposta nova invalida cache e pré-carregamento anterior', () => {
+  assert.match(client, /function invalidateAudioFor/);
+  assert.match(client, /cachedAudio\.key !== key/);
+  assert.match(client, /preloadJob\.key !== key/);
+  assert.match(client, /preloadJob\?\.controller\.abort\(\)/);
+});
+
+test('microfone só pausa quando o áudio está pronto para tocar', () => {
+  const resolvePosition = client.indexOf('const { data } = await resolveNaturalAudio(text)');
+  const pausePosition = client.indexOf('pauseCommands();', resolvePosition);
+  assert.ok(resolvePosition >= 0);
+  assert.ok(pausePosition > resolvePosition);
+});
+
 test('runtime e PWA publicam o player, mas não armazenam API ou áudio', () => {
   assert.match(loader, /natural-voice-v24a\.js/);
   assert.match(loader, /dataset\.voiceNatural = 'ready'/);
