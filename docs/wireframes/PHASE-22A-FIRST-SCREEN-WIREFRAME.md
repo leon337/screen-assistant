@@ -2,18 +2,19 @@
 
 ## Objetivo
 
-Simplificar a criação de uma análise no Screen Assistant e tornar a escolha do especialista uma consequência da intenção do usuário, não uma etapa obrigatória.
+Simplificar a criação de uma análise e tornar o especialista uma consequência da intenção do usuário, não uma etapa obrigatória.
 
 ## Princípios
 
 1. Uma ação principal por estado.
 2. O usuário escolhe o objetivo; o sistema sugere o especialista.
-3. A troca manual de especialista é opcional.
-4. Nada de barras duplicadas para Foto/Galeria.
-5. Nada de indicador 1–2–3 na primeira tela.
-6. Nada de onboarding completo do agente dentro do formulário.
-7. Nova análise não herda silenciosamente o especialista anterior.
-8. Controles técnicos ficam fora da jornada principal.
+3. Troca manual é opcional e compatível com a tarefa.
+4. Não existem barras duplicadas de Foto/Galeria.
+5. Não existe indicador 1–2–3 na primeira tela.
+6. Onboarding completo de agente não aparece dentro do formulário.
+7. Nova análise não herda silenciosamente intenção ou especialista.
+8. Antes da intenção, `profileId` e `taskId` ficam nulos.
+9. Controles técnicos permanecem fora da jornada principal.
 
 ## Estado A — Nenhuma imagem selecionada
 
@@ -31,27 +32,26 @@ Simplificar a criação de uma análise no Screen Assistant e tornar a escolha d
 │ │ ▣ Escolher da galeria       │ │
 │ └──────────────────────────────┘ │
 │                                  │
-│ Sua imagem será processada com   │
-│ segurança. Não envie senhas,     │
-│ documentos ou dados financeiros. │
+│ Não envie senhas, documentos ou  │
+│ dados financeiros.               │
 └──────────────────────────────────┘
 ```
 
-### Elementos permitidos
+### Mostrar
 
 - marca compacta;
 - acesso à conta;
 - título e subtítulo;
 - Tirar foto;
 - Escolher da galeria;
-- texto curto de privacidade.
+- aviso curto de privacidade.
 
-### Elementos proibidos
+### Não mostrar
 
 - barra fixa Foto/Galeria;
-- indicador 1–2–3;
+- indicador de etapas;
+- objetivos;
 - escolha de agente;
-- lista de objetivos;
 - botão Analisar;
 - Modo desktop;
 - Instalar;
@@ -63,7 +63,7 @@ Simplificar a criação de uma análise no Screen Assistant e tornar a escolha d
 ┌──────────────────────────────────┐
 │ ‹ Nova análise              Conta│
 ├──────────────────────────────────┤
-│ [ miniatura da imagem ]          │
+│ [ miniatura limitada a 180 px ]  │
 │ Trocar imagem                    │
 │                                  │
 │ O que você quer descobrir?       │
@@ -83,34 +83,52 @@ Simplificar a criação de uma análise no Screen Assistant e tornar a escolha d
 └──────────────────────────────────┘
 ```
 
-### Objetivos principais
+### Comportamento
 
-Exibir três objetivos prioritários:
+- após escolher a imagem, o foco vai para `O que você quer descobrir?`;
+- objetivos são lista vertical no mobile;
+- `Trocar imagem` é ação textual;
+- o CTA só fica ativo com imagem e intenção;
+- o especialista sugerido é anunciado por região `aria-live="polite"`.
+
+## Objetivos
+
+### Principais
 
 1. Explicar o conteúdo;
 2. Encontrar um problema;
 3. Analisar um gráfico.
 
-`Mais opções` revela:
+### Mais opções
 
 - Avaliar interface;
 - Avaliar arquitetura.
 
-### Roteamento padrão
+A ordem pode ser ajustada futuramente por dados reais de uso, sem alterar o contrato de roteamento.
 
-| Intenção | Especialista sugerido |
-|---|---|
-| Explicar o conteúdo | Assistente geral |
-| Encontrar um problema | Engenheiro de Software |
-| Avaliar interface | Especialista em UX |
-| Avaliar arquitetura | Arquiteto de Software |
-| Analisar um gráfico | Leonardo Trader |
+## Roteamento padrão
+
+| Intenção | Perfil | Tarefa |
+|---|---|---|
+| Explicar o conteúdo | Assistente geral | explain |
+| Encontrar um problema | Engenheiro de Software | diagnose |
+| Avaliar interface | Especialista em UX | ux |
+| Avaliar arquitetura | Arquiteto de Software | architecture |
+| Analisar um gráfico | Leonardo Trader | trader-map-scenarios |
+
+Antes da seleção da intenção:
+
+```yaml
+intentId: null
+profileId: null
+taskId: null
+```
 
 ## Estado C — Troca manual de especialista
 
 ```text
 ┌──────────────────────────────────┐
-│ Escolher especialista         ×  │
+│ ‹ Voltar   Escolher especialista │
 ├──────────────────────────────────┤
 │ ○ Assistente geral               │
 │   Leitura ampla de imagens       │
@@ -131,13 +149,16 @@ Exibir três objetivos prioritários:
 └──────────────────────────────────┘
 ```
 
-### Regras
+### Regras de compatibilidade
 
-- a troca manual não é etapa obrigatória;
-- o usuário pode fechar sem alterar a sugestão;
-- cada opção possui nome e explicação;
-- seleção não depende apenas de cor;
-- alvos de toque com no mínimo 48 px.
+- troca manual não é etapa obrigatória;
+- fechar ou voltar preserva a sugestão original;
+- cada opção possui nome e descrição;
+- seleção usa ícone, borda e texto, não apenas cor;
+- alvos de toque têm no mínimo 48 px;
+- ao trocar o especialista, a tarefa é recalculada para uma tarefa suportada pelo perfil;
+- combinações incompatíveis não podem ser enviadas à API;
+- caso não exista equivalência segura, o sistema explica e solicita nova intenção.
 
 ## Estado D — Leonardo Trader
 
@@ -151,7 +172,7 @@ Como deseja analisar?
 [ Mapear cenários                    ▾ ]
 ```
 
-A apresentação completa do Leonardo Trader não aparece aberta no formulário.
+A apresentação completa não aparece aberta dentro do formulário.
 
 Acesso opcional:
 
@@ -165,24 +186,21 @@ Esse conteúdo abre em ajuda, perfil ou painel recolhido.
 
 ### Nova análise
 
-Ao tocar em `Nova análise`:
-
 - remover imagem anterior;
 - remover intenção anterior;
 - remover pergunta anterior;
-- voltar ao Assistente geral como estado neutro;
-- preservar somente preferência de profundidade quando explicitamente escolhida pelo usuário;
-- não reutilizar silenciosamente Leonardo Trader ou outro agente.
+- definir `intentId`, `profileId` e `taskId` como nulos;
+- preservar profundidade somente quando o usuário tiver escolhido explicitamente essa preferência;
+- não reutilizar silenciosamente qualquer agente.
 
 ### Repetir análise
-
-Ao tocar em `Repetir análise`:
 
 - preservar imagem;
 - preservar intenção;
 - preservar especialista;
+- preservar tarefa;
 - preservar pergunta;
-- informar visualmente que o contexto foi mantido.
+- exibir `Usando as mesmas configurações da análise anterior`.
 
 ## Microcopy oficial
 
@@ -206,9 +224,12 @@ Ao tocar em `Repetir análise`:
 
 - Sem imagem: `Escolha uma imagem para continuar.`
 - Sem intenção: `Escolha o que deseja descobrir.`
-- Falha de análise: `Não foi possível concluir a análise. Tente novamente.`
+- Incompatibilidade: `Este especialista não executa esse tipo de análise. Escolha outro objetivo ou especialista.`
+- Falha: `Não foi possível concluir a análise. Tente novamente.`
 
-## Simulação 1 — Análise geral
+## Simulações
+
+### 1. Análise geral
 
 ```text
 Galeria
@@ -218,9 +239,7 @@ Galeria
 → Analisar agora
 ```
 
-Resultado esperado: nenhuma escolha manual de agente.
-
-## Simulação 2 — Avaliação de interface
+### 2. Avaliação de interface
 
 ```text
 Galeria
@@ -231,9 +250,7 @@ Galeria
 → Analisar agora
 ```
 
-Resultado esperado: o especialista aparece como consequência da intenção.
-
-## Simulação 3 — Gráfico
+### 3. Gráfico
 
 ```text
 Galeria
@@ -244,26 +261,26 @@ Galeria
 → Analisar agora
 ```
 
-Resultado esperado: o modo do Trader aparece sem abrir o onboarding completo.
-
 ## Critérios de aceitação
 
-1. Usuário consegue iniciar sem conhecer os agentes.
+1. Usuário inicia sem conhecer os agentes.
 2. Nenhum controle é duplicado.
-3. A primeira tela possui apenas as duas ações de envio.
-4. Objetivos só aparecem após selecionar imagem.
+3. Primeira tela possui apenas duas ações de envio.
+4. Objetivos surgem somente após imagem.
 5. Especialista é sugerido automaticamente.
-6. Troca manual é opcional.
-7. Nova análise reseta agente e intenção.
-8. Repetir análise preserva contexto com indicação visível.
+6. Troca manual é opcional e compatível.
+7. Nova análise zera intenção, perfil e tarefa.
+8. Repetir análise informa que preservou contexto.
 9. Nenhuma barra fixa encobre conteúdo.
-10. O CTA só fica disponível com imagem e intenção.
+10. CTA exige imagem e intenção.
+11. Foco e anúncios acessíveis são definidos.
+12. Onboarding do Trader não amplia o formulário.
 
 ## Estado
 
 ```yaml
-wireframe: pronto_para_RC
-implementacao: bloqueada
+wireframe: corrigido
+implementacao: bloqueada_ate_RC_002
 merge: nao_autorizado
 producao: intacta
 ```
