@@ -1,8 +1,8 @@
 {
   "name": "screen-assistant",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "private": true,
-  "description": "Plataforma SaaS de agentes visuais com autenticação, Gemini, voz e PWA.",
+  "description": "Plataforma SaaS de agentes visuais com autenticação, roteamento progressivo, Gemini, voz e PWA.",
   "type": "module",
   "engines": {
     "node": ">=22"
