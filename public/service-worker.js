@@ -1,3 +1,4 @@
+const PREVIOUS_CACHE_LINEAGE = 'screen-assistant-v20-saas-auth';
 const CACHE = 'screen-assistant-v21-design-experience';
 const APP_SHELL = [
   '/', '/index.html', '/styles.css', '/status.css', '/premium-v18.css', '/intent-v19.css',
@@ -6,6 +7,8 @@ const APP_SHELL = [
   '/auth-v20.js', '/auth-v20-ui.js', '/analysis.js', '/response.js', '/pwa.js', '/markdown.js',
   '/http.js', '/image.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'
 ];
+
+void PREVIOUS_CACHE_LINEAGE;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
