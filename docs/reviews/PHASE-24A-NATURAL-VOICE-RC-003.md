@@ -17,16 +17,28 @@
 
 ```yaml
 functional_head: 90cee7ba7a8ac20765f2107026ae45027bc931ee
+final_head_before_preview_note: 8bfaef585e9f7968a8d43828fbde966add35a75a
 workflow: 30856839993
+final_workflow: 30857050385
 job: 91829721472
+final_job: 91830388159
 tests: 142
 pass: 142
 fail: 0
 secrets: PASS
-deployment: dpl_CGNnebrjujUrJAaRAk9wYXiUXqwk
+functional_deployment: dpl_CGNnebrjujUrJAaRAk9wYXiUXqwk
+final_deployment: dpl_GmhSdsWWbLP835unDtRprQZq6yAq
 state: READY
 runtime_error_or_fatal_observed: 0
 ```
+
+## Preview final
+
+```text
+https://screen-assistant-preview-20260731-f3iqtcivs-predix-ai-br.vercel.app/?_vercel_share=BX2Z0fx2cEyPJw1fvEhlct53du0V7fjZ
+```
+
+O acesso temporário expira em 4 de agosto de 2026.
 
 ## Achados
 
