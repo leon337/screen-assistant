@@ -124,7 +124,7 @@ analise:
   - o_preview_nao_depende_de_escrita_de_env_pela_integracao
   - redirects_precisam_de_allowlist_no_Supabase
 decisao: liberar_para_testes_com_gate_manual_de_URL
-delivery: configuracao_publica_e_fluxos_de_email
+entrega: configuracao_publica_e_fluxos_de_email
 passagem_interna: Rafael_para_Renato
 ```
 
