@@ -10,6 +10,7 @@ document.body.dataset.voiceStreaming = 'loading';
 document.body.dataset.voiceDesktop = 'loading';
 document.body.dataset.voiceDesktopDock = 'loading';
 document.body.dataset.voiceDesktopStability = 'loading';
+document.body.dataset.voiceDesktopStabilityBuild = 'incident-005';
 
 for (const href of ['/auth-v20.css', '/auth-v21.css', '/design-v21.css', '/result-v22.css', '/first-screen-v22a.css', '/first-screen-v22a-desktop.css', '/voice-v23.css', '/voice-v24a.css', '/voice-desktop-v24a.css']) {
   const link = document.createElement('link');
