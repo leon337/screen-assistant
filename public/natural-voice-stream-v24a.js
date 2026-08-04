@@ -22,6 +22,8 @@ let nextStartTime = 0;
 let pendingBytes = new Uint8Array(0);
 let carryByte = null;
 let commandsWereArmed = false;
+let streamCache = null;
+let collectedBytes = new Uint8Array(0);
 const activeSources = new Set();
 
 function setStatus(message, tone = 'neutral') {
@@ -41,6 +43,15 @@ function answerText() {
     .replace(/\n{3,}/g, '\n\n')
     .trim()
     .slice(0, 4000);
+}
+
+function speechKey(text) {
+  let hash = 2166136261;
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `${text.length}:${(hash >>> 0).toString(36)}`;
 }
 
 function currentRate() {
@@ -77,7 +88,7 @@ function dispatchState() {
       speaking: isSpeaking(),
       generating: streamGenerating,
       streaming: streamSpeaking || streamGenerating,
-      preloaded: legacy?.isPreloaded?.() || false,
+      preloaded: Boolean(streamCache?.key === speechKey(answerText())) || legacy?.isPreloaded?.() || false,
     },
   }));
 }
@@ -180,6 +191,7 @@ function stopStreamOnly({ resume = true, announce = false } = {}) {
   }
   activeSources.clear();
   pendingBytes = new Uint8Array(0);
+  collectedBytes = new Uint8Array(0);
   carryByte = null;
   streamGenerating = false;
   streamSpeaking = false;
@@ -225,12 +237,22 @@ async function requestStream(text, signal) {
   return response;
 }
 
+async function playCachedStream(bytes) {
+  const context = ensureAudioContext();
+  await context.resume();
+  streamGenerating = false;
+  streamCompleted = true;
+  scheduleBytes(bytes, { force: true });
+  maybeFinishStream();
+}
+
 async function playStream(text) {
   const context = ensureAudioContext();
   await context.resume();
   streamController = new AbortController();
   streamGenerating = true;
   streamCompleted = false;
+  collectedBytes = new Uint8Array(0);
   setStatus('Iniciando voz natural progressiva…', 'success');
   dispatchState();
 
@@ -251,7 +273,9 @@ async function playStream(text) {
       const delta = event?.event_type === 'step.delta' ? event.delta : null;
       if (delta?.type === 'audio' && delta.data) {
         receivedAudio = true;
-        scheduleBytes(base64ToBytes(delta.data));
+        const bytes = base64ToBytes(delta.data);
+        collectedBytes = concatBytes(collectedBytes, bytes);
+        scheduleBytes(bytes);
       }
     }
     if (done) break;
@@ -262,13 +286,17 @@ async function playStream(text) {
     const delta = event?.event_type === 'step.delta' ? event.delta : null;
     if (delta?.type === 'audio' && delta.data) {
       receivedAudio = true;
-      scheduleBytes(base64ToBytes(delta.data));
+      const bytes = base64ToBytes(delta.data);
+      collectedBytes = concatBytes(collectedBytes, bytes);
+      scheduleBytes(bytes);
     }
   }
 
   if (!receivedAudio) throw new Error('O provedor não retornou áudio progressivo.');
   carryByte = null;
   scheduleBytes(new Uint8Array(0), { force: true });
+  streamCache = { key: speechKey(text), bytes: collectedBytes };
+  collectedBytes = new Uint8Array(0);
   streamCompleted = true;
   streamController = null;
   maybeFinishStream();
@@ -284,12 +312,16 @@ export async function speakAnswerStreamed() {
     return true;
   }
 
+  const key = speechKey(text);
+  if (streamCache && streamCache.key !== key) streamCache = null;
+
   stopStreamOnly({ resume: false });
   legacy?.stop?.({ resume: false, announce: false, preservePreload: false });
   window.speechSynthesis?.cancel();
 
   try {
-    await playStream(text);
+    if (streamCache?.key === key) await playCachedStream(streamCache.bytes);
+    else await playStream(text);
     return true;
   } catch (error) {
     const cancelled = error?.name === 'AbortError';
@@ -337,7 +369,7 @@ function initialize() {
     stop: stopNaturalSpeechStreamed,
     isSpeaking,
     isBusy,
-    isPreloaded: () => legacy.isPreloaded?.() || false,
+    isPreloaded: () => Boolean(streamCache?.key === speechKey(answerText())) || legacy.isPreloaded?.() || false,
     getMode,
     setMode: (...args) => legacy.setMode?.(...args),
     setRate: setNaturalPlaybackRate,
