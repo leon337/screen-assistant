@@ -20,8 +20,9 @@ test('endpoint usa streaming oficial do Gemini TTS 3.1', () => {
   assert.match(endpoint, /\/v1beta\/interactions\?alt=sse/);
   assert.match(endpoint, /api-revision': API_REVISION/);
   assert.match(endpoint, /stream: true/);
-  assert.match(endpoint, /type: 'audio'/);
-  assert.match(endpoint, /mime_type: 'audio\/l16'/);
+  assert.match(endpoint, /response_format:\s*\{\s*type: 'audio',?\s*\}/s);
+  assert.doesNotMatch(endpoint, /mime_type: 'audio\/l16'/);
+  assert.doesNotMatch(endpoint, /delivery: 'inline'/);
   assert.match(endpoint, /speech_config: \[\{ voice:/);
 });
 
