@@ -6,6 +6,7 @@ document.body.dataset.authState = 'loading';
 document.body.dataset.voiceControls = 'loading';
 document.body.dataset.voiceDesign = 'loading';
 document.body.dataset.voiceNatural = 'loading';
+document.body.dataset.voiceStreaming = 'loading';
 
 for (const href of ['/auth-v20.css', '/auth-v21.css', '/design-v21.css', '/result-v22.css', '/first-screen-v22a.css', '/first-screen-v22a-desktop.css', '/voice-v23.css', '/voice-v24a.css']) {
   const link = document.createElement('link');
@@ -25,6 +26,8 @@ await import('./voice-v24a.js');
 document.body.dataset.voiceDesign = 'ready';
 await import('./natural-voice-v24a.js');
 document.body.dataset.voiceNatural = 'ready';
+await import('./natural-voice-stream-v24a.js');
+document.body.dataset.voiceStreaming = 'ready';
 
 const answer = document.getElementById('answer');
 
