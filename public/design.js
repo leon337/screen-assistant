@@ -8,6 +8,7 @@ document.body.dataset.voiceDesign = 'loading';
 document.body.dataset.voiceNatural = 'loading';
 document.body.dataset.voiceStreaming = 'loading';
 document.body.dataset.voiceDesktop = 'loading';
+document.body.dataset.voiceDesktopDock = 'loading';
 
 for (const href of ['/auth-v20.css', '/auth-v21.css', '/design-v21.css', '/result-v22.css', '/first-screen-v22a.css', '/first-screen-v22a-desktop.css', '/voice-v23.css', '/voice-v24a.css', '/voice-desktop-v24a.css']) {
   const link = document.createElement('link');
@@ -31,6 +32,10 @@ await import('./natural-voice-stream-v24a.js');
 document.body.dataset.voiceStreaming = 'ready';
 await import('./voice-desktop-v24a.js');
 document.body.dataset.voiceDesktop = 'ready';
+await import('./voice-desktop-dock-hotfix-v24a.js');
+if (document.body.dataset.voiceDesktopDock === 'loading') {
+  document.body.dataset.voiceDesktopDock = 'ready';
+}
 
 const answer = document.getElementById('answer');
 
