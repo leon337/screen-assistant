@@ -1,0 +1,36 @@
+@media (min-width: 901px) and (pointer: fine) {
+  .voice-command-toggle-v23,
+  .response-actions #speak-answer,
+  .response-actions #stop-voice {
+    display: none !important;
+  }
+
+  .voice-dock-v24a {
+    max-width: 42rem;
+    margin-inline: auto;
+  }
+
+  .voice-dock-actions-v24a {
+    grid-template-columns: minmax(7rem, 1fr) minmax(7rem, 1fr) minmax(4.5rem, 0.6fr) minmax(6rem, 0.8fr);
+  }
+
+  #voice-mic-v24a,
+  #voice-speech-v24a {
+    font-size: 0.94rem;
+  }
+
+  body[data-voice-desktop-fallback='recording'] #voice-mic-v24a {
+    border-color: rgba(92, 230, 175, 0.88);
+    background: rgba(28, 112, 87, 0.42);
+    box-shadow: 0 0 0 3px rgba(92, 230, 175, 0.14);
+  }
+
+  body[data-voice-desktop-fallback='processing'] #voice-mic-v24a {
+    border-color: rgba(170, 164, 255, 0.82);
+    background: rgba(95, 82, 184, 0.3);
+  }
+}
+
+.voice-command-card-v23 [hidden] {
+  display: none !important;
+}
