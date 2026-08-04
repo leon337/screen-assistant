@@ -10,7 +10,8 @@ document.body.dataset.voiceStreaming = 'loading';
 document.body.dataset.voiceDesktop = 'loading';
 document.body.dataset.voiceDesktopDock = 'loading';
 document.body.dataset.voiceDesktopStability = 'loading';
-document.body.dataset.voiceDesktopStabilityBuild = 'incident-005';
+document.body.dataset.voiceDesktopPlayback = 'loading';
+document.body.dataset.voiceDesktopStabilityBuild = 'incident-006';
 
 for (const href of ['/auth-v20.css', '/auth-v21.css', '/design-v21.css', '/result-v22.css', '/first-screen-v22a.css', '/first-screen-v22a-desktop.css', '/voice-v23.css', '/voice-v24a.css', '/voice-desktop-v24a.css']) {
   const link = document.createElement('link');
@@ -41,6 +42,10 @@ if (document.body.dataset.voiceDesktopDock === 'loading') {
 await import('./voice-desktop-stability-v24a.js');
 if (document.body.dataset.voiceDesktopStability === 'loading') {
   document.body.dataset.voiceDesktopStability = 'ready';
+}
+await import('./voice-desktop-playback-safety-v24a.js');
+if (document.body.dataset.voiceDesktopPlayback === 'loading') {
+  document.body.dataset.voiceDesktopPlayback = 'safe';
 }
 
 const answer = document.getElementById('answer');
