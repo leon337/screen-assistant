@@ -7,7 +7,7 @@ O usuário enviou duas capturas do Brave no Linux. A barra universal estava vis�
 ## Observabilidade
 
 ```yaml
-deployment: dpl_fKoemgN99Rc24YcRNe3dnFBQjZ96
+deployment_do_incidente: dpl_fKoemgN99Rc24YcRNe3dnFBQjZ96
 route: /api/v1/transcribe-command
 request_time_utc: 2026-08-04T02:54:45Z
 http_status: 200
@@ -80,10 +80,24 @@ Cobertura:
 - retorno ao estado ocioso;
 - runtime e PWA.
 
+## Evidências da correção
+
+```yaml
+functional_commit: 683474e6245fc3d11242722ba83edf159f7767da
+head_validado_antes_deste_registro: 46be4b9bc2166101f6942f34a1108d09d8ed522b
+workflow: 30873611224
+job: 91880424857
+tests: 177
+pass: 177
+fail: 0
+secrets: PASS
+```
+
 ## Estado
 
 ```yaml
 implementation: COMPLETE_ON_BRANCH
+CI: PASS
 device_retest: PENDING
 merge: NOT_AUTHORIZED
 production_deployment: NOT_AUTHORIZED
