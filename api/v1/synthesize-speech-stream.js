@@ -106,8 +106,6 @@ export default async function handler(request) {
         input: ttsInternals.buildPrompt(transcript),
         response_format: {
           type: 'audio',
-          mime_type: 'audio/l16',
-          delivery: 'inline',
         },
         generation_config: {
           speech_config: [{ voice: appConfig.geminiTtsVoice }],
