@@ -7,8 +7,9 @@ document.body.dataset.voiceControls = 'loading';
 document.body.dataset.voiceDesign = 'loading';
 document.body.dataset.voiceNatural = 'loading';
 document.body.dataset.voiceStreaming = 'loading';
+document.body.dataset.voiceDesktop = 'loading';
 
-for (const href of ['/auth-v20.css', '/auth-v21.css', '/design-v21.css', '/result-v22.css', '/first-screen-v22a.css', '/first-screen-v22a-desktop.css', '/voice-v23.css', '/voice-v24a.css']) {
+for (const href of ['/auth-v20.css', '/auth-v21.css', '/design-v21.css', '/result-v22.css', '/first-screen-v22a.css', '/first-screen-v22a-desktop.css', '/voice-v23.css', '/voice-v24a.css', '/voice-desktop-v24a.css']) {
   const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.href = href;
@@ -28,6 +29,8 @@ await import('./natural-voice-v24a.js');
 document.body.dataset.voiceNatural = 'ready';
 await import('./natural-voice-stream-v24a.js');
 document.body.dataset.voiceStreaming = 'ready';
+await import('./voice-desktop-v24a.js');
+document.body.dataset.voiceDesktop = 'ready';
 
 const answer = document.getElementById('answer');
 
