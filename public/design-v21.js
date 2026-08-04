@@ -63,7 +63,7 @@ function enhanceIntentCards() {
 }
 
 function improveCopy() {
-  if (!hasDom) return;
+  if (!hasDom || document.body.classList.contains('first-screen-v22a')) return;
   const routeTitle = document.getElementById('premium-route-title');
   const routeSubtitle = document.getElementById('premium-route-subtitle');
   const workspaceTitle = document.getElementById('workspace-title');
@@ -117,7 +117,8 @@ function synchronizeState() {
   const barAnalyze = document.getElementById('bar-analyze');
   const label = activeIntent?.querySelector('strong')?.textContent?.trim();
   if (label) {
-    setHtml(analyze, `<span aria-hidden="true">✦</span> Analisar: ${label}`);
+    if (document.body.classList.contains('first-screen-v22a')) setHtml(analyze, 'Analisar agora');
+    else setHtml(analyze, `<span aria-hidden="true">✦</span> Analisar: ${label}`);
     setHtml(barAnalyze, '<span aria-hidden="true">✦</span> Analisar');
   }
 }

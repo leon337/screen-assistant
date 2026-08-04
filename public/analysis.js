@@ -4,13 +4,14 @@ import { getAccessToken, signOut } from './auth-v20.js';
 export const ANALYSIS_STAGES = ['prepare', 'send', 'analyze', 'fallback', 'format'];
 
 let analysisContextProvider = () => ({
-  profileId: 'general',
-  taskId: 'explain',
+  intentId: null,
+  profileId: null,
+  taskId: null,
   responseMode: 'standard',
 });
 
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-  const intentModule = await import('./intent-v19.js');
+  const intentModule = await import('./intent-v22a.js');
   analysisContextProvider = intentModule.getAnalysisContext;
 }
 
@@ -21,6 +22,9 @@ export async function requestAnalysis({ imageBlob, question = '', signal, onStag
   const accessToken = await getAccessToken();
   if (!accessToken) throw new Error('Entre na sua conta para realizar uma análise.');
   const analysisContext = analysisContextProvider();
+  if (!analysisContext.intentId || !analysisContext.profileId || !analysisContext.taskId) {
+    throw new Error('Escolha o que deseja descobrir antes de analisar.');
+  }
 
   onStage('prepare');
   const form = new FormData();

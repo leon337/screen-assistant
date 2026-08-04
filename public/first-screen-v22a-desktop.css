@@ -1,0 +1,45 @@
+@media (min-width: 901px) and (pointer: fine) {
+  body.first-screen-v22a[data-premium-screen="analyze"] .shell {
+    width: min(1180px, calc(100% - 32px));
+    padding-bottom: 96px;
+  }
+
+  body.first-screen-v22a[data-premium-screen="analyze"] .premium-topbar {
+    position: sticky;
+  }
+
+  body.first-screen-v22a[data-premium-screen="analyze"] .side-column {
+    display: block !important;
+  }
+
+  body.first-screen-v22a[data-premium-screen="analyze"] .premium-tab-bar {
+    display: flex !important;
+  }
+
+  body.first-screen-v22a[data-premium-screen="analyze"] .install-hint,
+  body.first-screen-v22a[data-premium-screen="analyze"] .app-footer {
+    display: flex !important;
+  }
+
+  body.first-screen-v22a[data-premium-screen="analyze"] .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, .42fr);
+    align-items: start;
+  }
+
+  body.first-screen-v22a[data-premium-screen="analyze"] .input-panel {
+    padding: 24px;
+    border: 1px solid var(--v21-border);
+    border-radius: var(--v21-radius-card);
+    background: linear-gradient(180deg, rgba(17, 26, 50, .96), rgba(11, 18, 36, .96));
+    box-shadow: var(--v21-shadow);
+  }
+
+  body.first-screen-v22a[data-premium-screen="analyze"] .source-picker {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  body.first-screen-v22a[data-premium-screen="analyze"] .source-card {
+    min-height: 84px;
+  }
+}
