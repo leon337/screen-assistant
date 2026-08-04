@@ -13,12 +13,13 @@ const CACHE_LINEAGE = [
   'screen-assistant-v24a-natural-voice-latency-1',
   'screen-assistant-v24a-natural-voice-stream-1',
   'screen-assistant-v24a-desktop-voice-1',
+  'screen-assistant-v24a-desktop-dock-hotfix-1',
 ];
-const CACHE = 'screen-assistant-v24a-desktop-dock-hotfix-1';
+const CACHE = 'screen-assistant-v24a-desktop-mic-stability-1';
 const APP_SHELL = [
   '/', '/index.html', '/styles.css', '/status.css', '/premium-v18.css', '/intent-v19.css',
   '/auth-v20.css', '/auth-v21.css', '/design-v21.css', '/result-v22.css', '/first-screen-v22a.css', '/first-screen-v22a-desktop.css', '/voice-v23.css', '/voice-v24a.css', '/voice-desktop-v24a.css',
-  '/app.js', '/design.js', '/design-v21.js', '/result-v22.js', '/first-screen-v22a.js', '/voice-v23.js', '/voice-v23-build.js', '/voice-v24a.js', '/natural-voice-v24a.js', '/natural-voice-stream-v24a.js', '/voice-desktop-v24a.js', '/voice-desktop-dock-hotfix-v24a.js', '/status.js', '/premium-v18.js',
+  '/app.js', '/design.js', '/design-v21.js', '/result-v22.js', '/first-screen-v22a.js', '/voice-v23.js', '/voice-v23-build.js', '/voice-v24a.js', '/natural-voice-v24a.js', '/natural-voice-stream-v24a.js', '/voice-desktop-v24a.js', '/voice-desktop-dock-hotfix-v24a.js', '/voice-desktop-stability-v24a.js', '/status.js', '/premium-v18.js',
   '/intent-v19.js', '/intent-v22a.js', '/auth-v20.js', '/auth-v20-ui.js', '/analysis.js', '/response.js', '/pwa.js', '/markdown.js',
   '/http.js', '/image.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'
 ];
